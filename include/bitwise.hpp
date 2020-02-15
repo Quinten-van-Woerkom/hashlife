@@ -43,6 +43,16 @@ constexpr auto bit(Unsigned value, std::size_t index) noexcept -> bool {
 }
 
 /**
+ * Sets the bit at <index> in <value>.
+ * If <index> is bigger than the number of bits in Unsigned, the operation is a
+ * no-op.
+ */
+template<typename Unsigned, typename = requires_unsigned<Unsigned>>
+constexpr void set(Unsigned& value, std::size_t index) noexcept {
+  value |= (Unsigned(1) << index);
+}
+
+/**
  * Bitmask-based half-adder, allowing for simultaneous adding of all bits in
  * two unsigned values. Returns a pair representing the sum and carry bits.
  */
