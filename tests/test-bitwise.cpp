@@ -19,12 +19,39 @@
 
 #include "catch2/catch.hpp"
 
+#include <cstddef>
+#include <cstdint>
+
 #include "bitwise.hpp"
 
 TEST_CASE("Obtaining bits", "[bit]") {
-  REQUIRE(bit(0b100u, 2) == true);
-  REQUIRE(bit(0b100u, 3) == false);
-  REQUIRE(bit(0b100u, 1) == false);
+  auto value = 0b0100u;
+
+  SECTION("Bits should match value") {
+    REQUIRE(bit(value, 0) == false);
+    REQUIRE(bit(value, 1) == false);
+    REQUIRE(bit(value, 2) == true);
+    REQUIRE(bit(value, 3) == false);
+  }
+
+  SECTION("Bits past end of integer are 0") {
+    REQUIRE(bit(value, sizeof(value)) == false);
+  }
+}
+
+TEST_CASE("Setting bits", "[set-bit]") {
+  auto value = 0b1000u;
+  
+  SECTION("Should set a bit to true") {
+    set(value, 1);
+    REQUIRE(bit(value, 1) == true);
+  }
+
+  SECTION("Setting a bit should not affect others") {
+    set(value, 1);
+    REQUIRE(bit(value, 2) == false);
+    REQUIRE(bit(value, 3) == true);
+  }
 }
 
 TEST_CASE("Half-adding", "[half-add]") {
