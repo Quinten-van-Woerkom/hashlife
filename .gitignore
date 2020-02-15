@@ -32,3 +32,6 @@
 *.app
 conway
 test
+
+# Visual Studio Code files
+.vscode/
