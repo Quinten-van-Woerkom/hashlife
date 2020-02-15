@@ -7,7 +7,7 @@ LDFLAGS=-lstdc++fs
 LDLIBS=
 
 MAIN=conway.cpp
-TEST=tests/test.cpp
+TEST=tests/test.cpp tests/test-bitwise.cpp
 SRCS=
 OBJS=$(subst .cpp,.o,$(SRCS))
 
