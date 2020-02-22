@@ -92,6 +92,22 @@ auto cells::next() const noexcept -> cells {
  * possible. See Tony Finch's "Life in a Register" for more information.
  */
 auto cells::step() const noexcept -> cells {
+  const auto [sum1, sum2, sum4] = this->neighbours();
+  const auto case1 = bitmap & (~sum1 & ~sum2 & sum4); // Alive and 3 neighbours
+  const auto case2 = sum1 & sum2 & ~sum4; // Total of 3 cells in neighbourhood
+  constexpr auto  mask = 0x007e7e7e7e7e7e00ull; // Edge cells are unknown.
+  return cells{(case1 | case2) & mask};
+}
+
+/**
+ * Computes the number of neighbours a cell has, returning it as a 3-bit
+ * value, encoded in three bitmaps. Each location in a bitmap represents that
+ * bit in the number of neighbours of the cell located there.
+ * We neglect the counts of 8 and 9 neighbouring cells, since they behave
+ * identically to 0 and 1 neighbours, respectively. As such, we just allow
+ * overflow.
+ */
+auto cells::neighbours() const noexcept -> std::array<std::uint64_t, 3> {
   const auto left = bitmap << 1;
   const auto right = bitmap >> 1;
   const auto [mid1, mid2] = full_add(left, bitmap, right);
@@ -106,10 +122,7 @@ auto cells::step() const noexcept -> cells {
   const auto [sum2, sum4b] = half_add(sum2a, sum2b);
   const auto sum4 = sum4a ^ sum4b;
 
-  const auto case1 = bitmap & (~sum1 & ~sum2 & sum4); // Alive and 3 neighbours
-  const auto case2 = sum1 & sum2 & ~sum4; // Total of 3 cells in neighbourhood
-  constexpr auto  mask = 0x007e7e7e7e7e7e00ull; // Edge cells are unknown.
-  return cells{(case1 | case2) & mask};
+  return {sum1, sum2, sum4};
 }
 
 /**
