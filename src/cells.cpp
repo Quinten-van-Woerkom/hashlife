@@ -108,7 +108,7 @@ auto cells::step() const noexcept -> cells {
  * use popcount in any performance-critical code.
  */
 auto cells::population_count() const noexcept -> std::size_t {
-  return std::bitset<8>(bitmap).count();
+  return std::bitset<64>(bitmap).count();
 }
 
 /**
