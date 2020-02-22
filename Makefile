@@ -7,8 +7,8 @@ LDFLAGS=-lstdc++fs
 LDLIBS=
 
 MAIN=conway.cpp
-TEST=tests/test.cpp tests/test-bitwise.cpp
-SRCS=
+TEST=$(wildcard tests/*.cpp)
+SRCS=$(wildcard src/*.cpp)
 OBJS=$(subst .cpp,.o,$(SRCS))
 
 release: ADDED_CPPFLAGS=-O3 -flto=thin
