@@ -51,6 +51,11 @@ public:
   auto population_count() const noexcept -> std::size_t;
   auto empty() const noexcept -> bool;
 
+  static auto block() noexcept { return cells{"$$$...**...$...**...$$$$"}; }
+  static auto empty_square() noexcept { return cells{"$$$$$$$$"}; }
+  static auto blinker() noexcept { return cells{"$$.***$$$$$$"}; }
+  static auto glider() noexcept { return cells{"$$...*$..*$..***$$$$"}; }
+
 private:
   auto neighbours() const noexcept -> std::array<std::uint64_t, 3>;
 
