@@ -51,9 +51,17 @@ public:
   auto population_count() const noexcept -> std::size_t;
   auto empty() const noexcept -> bool;
 
-  static auto block() noexcept { return cells{"$$$...**...$...**...$$$$"}; }
   static auto empty_square() noexcept { return cells{"$$$$$$$$"}; }
+  static auto block() noexcept { return cells{"$$$...**...$...**...$$$$"}; }
+  static auto beehive() noexcept { return cells{"$$$...**$..*..*$...**$$$"}; }
+  static auto loaf() noexcept { return cells{"$$...**$..*..*$...*.*$....*$$$"}; }
+  static auto boat() noexcept { return cells{"$$$..**$..*.*$...*$$$"}; }
+  static auto tub() noexcept { return cells{"$$$...*$..*.*$...*$$$"}; }
+
   static auto blinker() noexcept { return cells{"$$.***$$$$$$"}; }
+  static auto toad() noexcept { return cells{"$$$...***$..***$$$$"}; }
+  static auto beacon() noexcept { return cells{"$$..**$..**$....**$....**$$$"}; }
+
   static auto glider() noexcept { return cells{"$$...*$..*$..***$$$$"}; }
 
 private:
