@@ -112,6 +112,36 @@ auto cells::population_count() const noexcept -> std::size_t {
 }
 
 /**
+ * Creates a new cell centered in the four given cells, of the same size as
+ * each of the given cells is.
+ */
+auto cells::center(cells nw, cells ne, cells sw, cells se) noexcept -> cells {
+  auto upper_left = nw.bitmap >> (columns/2 + columns*rows/2) & 0xf0f0f0f000000000ull;
+  auto upper_right = ne.bitmap >> (-columns/2 + columns*rows/2) & 0xf0f0f0f00000000ull;
+  auto lower_left = sw.bitmap << (-columns/2 + columns*rows/2) & 0xf0f0f0f0ull;
+  auto lower_right = se.bitmap << (columns/2 + columns*rows/2) & 0xf0f0f0full;
+  return cells{upper_left | upper_right | lower_left | lower_right};
+}
+
+/**
+ * Creates a new cell center horizontally between two cells, of the same size.
+ */
+auto cells::horizontal(cells west, cells east) noexcept -> cells {
+  auto left = (west.bitmap >> columns/2) & 0xf0f0f0f0f0f0f0f0ull;
+  auto right = (east.bitmap << columns/2) & 0xf0f0f0f0f0f0f0f0ull;
+  return cells{left | right};
+}
+
+/**
+ * Creates a new cell center vertically between two cells, of the same size.
+ */
+auto cells::vertical(cells north, cells south) noexcept -> cells {
+  auto up = (north.bitmap >> columns*rows/2) & 0xffffffff00000000ull;
+  auto down = (south.bitmap << columns*rows/2) & 0xffffffffull;
+  return cells{up | down};
+}
+
+/**
  * Computes the number of neighbours a cell has, returning it as a 3-bit
  * value, encoded in three bitmaps. Each location in a bitmap represents that
  * bit in the number of neighbours of the cell located there.

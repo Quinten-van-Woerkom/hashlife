@@ -51,6 +51,10 @@ public:
   auto population_count() const noexcept -> std::size_t;
   auto empty() const noexcept -> bool;
 
+  static auto center(cells nw, cells ne, cells sw, cells se) noexcept -> cells;
+  static auto horizontal(cells west, cells east) noexcept -> cells;
+  static auto vertical(cells north, cells south) noexcept -> cells;
+
   static auto empty_square() noexcept { return cells{"$$$$$$$$"}; }
   static auto block() noexcept { return cells{"$$$...**...$...**...$$$$"}; }
   static auto beehive() noexcept { return cells{"$$$...**$..*..*$...**$$$"}; }
