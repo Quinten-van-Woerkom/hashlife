@@ -74,13 +74,13 @@ auto cells::operator()(std::size_t x, std::size_t y) const noexcept -> bool {
 }
 
 /**
- * Returns the next generation of cells, i.e. its state 3 steps into the
+ * Returns the next generation of cells, i.e. its state 2 steps into the
  * future. Implemented as repeated calls to step(), since that is highly
- * optimised already. All but the middle 2x2 square is disregarded, since only
+ * optimised already. All but the middle 4x4 square is disregarded, since only
  * those cells are known for sure.
  */
 auto cells::next() const noexcept -> cells {
-  return cells{step().step().step().bitmap & 0x0000001818000000ull};
+  return cells{step().step().bitmap & 0x00003c3c3c3c0000ull};
 }
 
 /**
