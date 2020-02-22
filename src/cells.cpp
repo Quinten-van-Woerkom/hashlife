@@ -19,6 +19,7 @@
 
 #include "cells.hpp"
 
+#include <bitset>
 #include <functional>
 #include <iostream>
 
@@ -97,6 +98,17 @@ auto cells::step() const noexcept -> cells {
   const auto case2 = sum1 & sum2 & ~sum4; // Total of 3 cells in neighbourhood
   constexpr auto  mask = 0x007e7e7e7e7e7e00ull; // Edge cells are unknown.
   return cells{(case1 | case2) & mask};
+}
+
+/**
+ * Determines the number of living cells contained in this square.
+ * Implemented as bitset::count(), as this is likely implemented in terms of
+ * built-in popcount() in most compilers.
+ * MSVC does not seem to use built-ins; for now, we ignore this, as we don't
+ * use popcount in any performance-critical code.
+ */
+auto cells::population_count() const noexcept -> std::size_t {
+  return std::bitset<8>(bitmap).count();
 }
 
 /**
