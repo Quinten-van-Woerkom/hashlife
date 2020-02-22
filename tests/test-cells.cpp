@@ -60,3 +60,10 @@ TEST_CASE("Life rules", "[life-rules]") {
     REQUIRE(glider.step().step().step().step() == moved_glider);
   }
 }
+
+TEST_CASE("Population count", "[popcount]") {
+  REQUIRE(cells::empty_square().population_count() == 0);
+  REQUIRE(cells::blinker().population_count() == 3);
+  REQUIRE(cells::block().population_count() == 4);
+  REQUIRE(cells::glider().population_count() == 5);
+}
