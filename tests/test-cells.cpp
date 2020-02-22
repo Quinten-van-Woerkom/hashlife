@@ -26,7 +26,7 @@
 using namespace life;
 
 TEST_CASE("Cell construction", "[cells-constructor]") {
-  auto empty = cells{"$$$$$$$$"};
+  auto empty = cells::empty_square();
   auto block = cells{"$$$...**...$...**...$$$$"};
 
   REQUIRE(empty == cells{});
@@ -36,19 +36,19 @@ TEST_CASE("Cell construction", "[cells-constructor]") {
 
 TEST_CASE("Life rules", "[life-rules]") {
   SECTION("Block of 2x2 living cells shall not change over generations") {
-    auto block = cells{"$$$...**...$...**...$$$$"};
+    auto block = cells::block();
     REQUIRE(block.step() == block);
     REQUIRE(block.next() == block);
   }
 
   SECTION("Empty cell block shall remain empty") {
-    auto empty = cells{"$$$$$$$$"};
+    auto empty = cells::empty_square();
     REQUIRE(empty.step() == empty);
     REQUIRE(empty.next() == empty);
   }
 
   SECTION("Blinker shall rotate 90 degrees every step") {
-    auto blinker = cells{"$$.***$$$$$$"};
+    auto blinker = cells::blinker();
     auto rotated = cells{"$..*$..*$..*$$$$$"};
     REQUIRE(blinker.step() == rotated);
     REQUIRE(rotated.step() == blinker);
