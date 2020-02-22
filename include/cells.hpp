@@ -48,7 +48,7 @@ public:
   auto operator()(std::size_t x, std::size_t y) const noexcept -> bool;
   auto next() const noexcept -> cells;
   auto step() const noexcept -> cells;
-  auto count() const noexcept -> std::size_t;
+  auto population_count() const noexcept -> std::size_t;
   auto empty() const noexcept -> bool;
 
 private:
