@@ -35,23 +35,39 @@ TEST_CASE("Cell construction", "[cells-constructor]") {
 }
 
 TEST_CASE("Life rules", "[life-rules]") {
-  SECTION("Block of 2x2 living cells shall not change over generations") {
-    auto block = cells::block();
-    REQUIRE(block.step() == block);
-    REQUIRE(block.next() == block);
-  }
-
-  SECTION("Empty cell block shall remain empty") {
+  SECTION("Still-live patterns shall not change over generations") {
     auto empty = cells::empty_square();
+    auto block = cells::block();
+    auto beehive = cells::beehive();
+    auto loaf = cells::loaf();
+    auto boat = cells::boat();
+    auto tub = cells::tub();
+
     REQUIRE(empty.step() == empty);
     REQUIRE(empty.next() == empty);
+    REQUIRE(block.step() == block);
+    REQUIRE(block.next() == block);
+    REQUIRE(beehive.step() == beehive);
+    REQUIRE(beehive.next() == beehive);
+    REQUIRE(loaf.step() == loaf);
+    REQUIRE(loaf.next() == loaf);
+    REQUIRE(boat.step() == boat);
+    REQUIRE(boat.next() == boat);
+    REQUIRE(tub.step() == tub);
+    REQUIRE(tub.next() == tub);
   }
 
-  SECTION("Blinker shall rotate 90 degrees every step") {
+  SECTION("Oscillators shall be periodic") {
     auto blinker = cells::blinker();
-    auto rotated = cells{"$..*$..*$..*$$$$$"};
-    REQUIRE(blinker.step() == rotated);
-    REQUIRE(rotated.step() == blinker);
+    auto toad = cells::toad();
+    auto beacon = cells::beacon();
+
+    REQUIRE(blinker.step() != blinker);
+    REQUIRE(blinker.step().step() == blinker);
+    REQUIRE(toad.step() != toad);
+    REQUIRE(toad.step().step() == toad);
+    REQUIRE(beacon.step() != beacon);
+    REQUIRE(beacon.step().step() == beacon);
   }
 
   SECTION("Glider shall move one block each four generations") {
