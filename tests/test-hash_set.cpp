@@ -26,13 +26,36 @@
 
 using namespace life;
 
-TEST_CASE("Allocation works as expected for an array", "[array-allocation]") {
+TEST_CASE("Arena allocation works as expected", "[arena-allocation]") {
   auto arena = memory_arena<int>{10};
   REQUIRE(arena.size() == 10);
 
-  auto allocator = arena_allocator{arena};
-  int* array = allocator.allocate(9);
-  REQUIRE(array != nullptr);
-  int* fails = allocator.allocate(11);
-  REQUIRE(fails == nullptr);
+  SECTION("Arena shall be non-full upon construction") {
+    REQUIRE(!arena.full());
+  }
+
+  SECTION("Fitting allocation shall not fail") {
+    auto array = arena.allocate(9);
+    REQUIRE(array != nullptr);
+  }
+
+  SECTION("Fitting allocation shall result in non-full arena") {
+    arena.allocate(9);
+    REQUIRE(!arena.full());
+  }
+
+  SECTION("Exactly-fitting allocation should not fail") {
+    auto array = arena.allocate(10);
+    REQUIRE(array != nullptr);
+  }
+
+  SECTION("Arena shall be full after exactly-fitting allocation") {
+    arena.allocate(10);
+    REQUIRE(arena.full());
+  }
+
+  SECTION("Allocations bigger than the available arena memory shall fail") {
+    auto fails = arena.allocate(11);
+    REQUIRE(fails == nullptr);
+  }
 }
