@@ -31,8 +31,8 @@ namespace life {
  */
 class cells {
 public:
-  static constexpr std::size_t columns = 8;
-  static constexpr std::size_t rows = 8;
+  static constexpr int columns = 8;
+  static constexpr int rows = 8;
 
   cells(std::string_view format) noexcept;
   cells(std::uint64_t bitmap) noexcept : bitmap{bitmap} {}
@@ -51,6 +51,12 @@ public:
   auto population_count() const noexcept -> std::size_t;
   auto empty() const noexcept -> bool;
 
+  auto shift(int right, int down) const noexcept -> cells;
+  auto north() const noexcept -> cells;
+  auto south() const noexcept -> cells;
+  auto east() const noexcept -> cells;
+  auto west() const noexcept -> cells;
+
   static auto center(cells nw, cells ne, cells sw, cells se) noexcept -> cells;
   static auto horizontal(cells west, cells east) noexcept -> cells;
   static auto vertical(cells north, cells south) noexcept -> cells;
@@ -67,6 +73,8 @@ public:
   static auto beacon() noexcept { return cells{"$$..**$..**$....**$....**$$$"}; }
 
   static auto glider() noexcept { return cells{"$$...*$..*$..***$$$$"}; }
+
+  static auto filled() noexcept { return cells{0xffffffffffffffffull}; }
 
 private:
   auto neighbours() const noexcept -> std::array<std::uint64_t, 3>;

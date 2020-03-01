@@ -83,3 +83,10 @@ TEST_CASE("Population count", "[popcount]") {
   REQUIRE(cells::block().population_count() == 4);
   REQUIRE(cells::glider().population_count() == 5);
 }
+
+TEST_CASE("Cell square combinations", "[cell-combine]") {
+  auto filled = cells::filled();
+  REQUIRE(filled == cells::center(filled, filled, filled, filled));
+  REQUIRE(filled == cells::horizontal(filled, filled));
+  REQUIRE(filled == cells::vertical(filled, filled));
+}

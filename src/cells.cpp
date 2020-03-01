@@ -20,6 +20,7 @@
 #include "cells.hpp"
 
 #include <bitset>
+#include <cmath>
 #include <functional>
 #include <iostream>
 
@@ -112,14 +113,53 @@ auto cells::population_count() const noexcept -> std::size_t {
 }
 
 /**
+ * Shifts the bitmap in the specified direction.
+ * Cells just wrap-around to the next line upon leaving the frame, no logic is
+ * added to combat this.
+ */
+auto cells::shift(int right, int down) const noexcept -> cells {
+  auto shift = right + down*columns;
+  if (shift >= 0) return cells{bitmap << shift};
+  else return cells{bitmap >> -shift};
+}
+
+/**
+ * Zeroes all cells except for the north half.
+ */
+auto cells::north() const noexcept -> cells {
+  return cells{bitmap & 0xffffffffull};
+}
+
+/**
+ * Zeroes all cells except for the south half.
+ */
+auto cells::south() const noexcept -> cells {
+  return cells{bitmap & 0xffffffff00000000ull};
+}
+
+/**
+ * Zeroes all cells except for the east half.
+ */
+auto cells::east() const noexcept -> cells {
+  return cells{bitmap & 0xf0f0f0f0f0f0f0f0ull};
+}
+
+/**
+ * Zeroes all cells except for the west half.
+ */
+auto cells::west() const noexcept -> cells {
+  return cells{bitmap & 0x0f0f0f0f0f0f0f0full};
+}
+
+/**
  * Creates a new cell centered in the four given cells, of the same size as
  * each of the given cells is.
  */
 auto cells::center(cells nw, cells ne, cells sw, cells se) noexcept -> cells {
-  auto upper_left = nw.bitmap >> (columns/2 + columns*rows/2) & 0xf0f0f0f000000000ull;
-  auto upper_right = ne.bitmap >> (-columns/2 + columns*rows/2) & 0xf0f0f0f00000000ull;
-  auto lower_left = sw.bitmap << (-columns/2 + columns*rows/2) & 0xf0f0f0f0ull;
-  auto lower_right = se.bitmap << (columns/2 + columns*rows/2) & 0xf0f0f0full;
+  auto upper_left = nw.north().west().shift(columns/2, rows/2).bitmap;
+  auto upper_right = ne.north().east().shift(-columns/2, rows/2).bitmap;
+  auto lower_left = sw.south().west().shift(columns/2, -rows/2).bitmap;
+  auto lower_right = se.south().east().shift(-columns/2, -rows/2).bitmap;
   return cells{upper_left | upper_right | lower_left | lower_right};
 }
 
@@ -127,8 +167,8 @@ auto cells::center(cells nw, cells ne, cells sw, cells se) noexcept -> cells {
  * Creates a new cell center horizontally between two cells, of the same size.
  */
 auto cells::horizontal(cells west, cells east) noexcept -> cells {
-  auto left = (west.bitmap >> columns/2) & 0xf0f0f0f0f0f0f0f0ull;
-  auto right = (east.bitmap << columns/2) & 0xf0f0f0f0f0f0f0f0ull;
+  auto left = west.west().shift(columns/2, 0).bitmap;
+  auto right = east.east().shift(-columns/2, 0).bitmap;
   return cells{left | right};
 }
 
@@ -136,8 +176,8 @@ auto cells::horizontal(cells west, cells east) noexcept -> cells {
  * Creates a new cell center vertically between two cells, of the same size.
  */
 auto cells::vertical(cells north, cells south) noexcept -> cells {
-  auto up = (north.bitmap >> columns*rows/2) & 0xffffffff00000000ull;
-  auto down = (south.bitmap << columns*rows/2) & 0xffffffffull;
+  auto up = north.north().shift(0, rows/2).bitmap;
+  auto down = south.south().shift(0, -rows/2).bitmap;
   return cells{up | down};
 }
 
