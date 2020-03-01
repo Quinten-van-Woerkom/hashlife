@@ -38,6 +38,7 @@ public:
   auto operator=(memory_arena&&) -> memory_arena& = default;
 
   auto size() const noexcept -> std::size_t { return elements; }
+  auto full() const noexcept -> bool { return head == elements; }
   auto allocate(std::size_t n) noexcept -> T*;
   void deallocate(T* p, std::size_t bytes) const noexcept { /* no-op */ }
 
