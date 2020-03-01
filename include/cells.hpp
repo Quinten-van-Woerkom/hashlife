@@ -61,19 +61,19 @@ public:
   static auto horizontal(cells west, cells east) noexcept -> cells;
   static auto vertical(cells north, cells south) noexcept -> cells;
 
+  /**
+   * Default cells
+   */
   static auto empty_square() noexcept { return cells{"$$$$$$$$"}; }
   static auto block() noexcept { return cells{"$$$...**...$...**...$$$$"}; }
   static auto beehive() noexcept { return cells{"$$$...**$..*..*$...**$$$"}; }
   static auto loaf() noexcept { return cells{"$$...**$..*..*$...*.*$....*$$$"}; }
   static auto boat() noexcept { return cells{"$$$..**$..*.*$...*$$$"}; }
   static auto tub() noexcept { return cells{"$$$...*$..*.*$...*$$$"}; }
-
   static auto blinker() noexcept { return cells{"$$.***$$$$$$"}; }
   static auto toad() noexcept { return cells{"$$$...***$..***$$$$"}; }
   static auto beacon() noexcept { return cells{"$$..**$..**$....**$....**$$$"}; }
-
   static auto glider() noexcept { return cells{"$$...*$..*$..***$$$$"}; }
-
   static auto filled() noexcept { return cells{0xffffffffffffffffull}; }
 
 private:
