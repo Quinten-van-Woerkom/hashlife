@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <array>
 #include <cstdint>
 #include <limits>
 
@@ -55,6 +56,6 @@ class macrocell {
 public:
 
 private:
-  pointer nw, ne, sw, se;
+  std::array<pointer, 4> children;
 };
 }
