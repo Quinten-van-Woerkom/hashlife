@@ -30,19 +30,21 @@ namespace life {
 /**
  * Pointer to a macrocell or cell square one layer down in the life universe.
  * For now, just an index, but in the future might exploit the hash set
- * structure or anything in other ways.
+ * structure or macrocell regularities in other ways.
  * A nullptr is indicated by a std::uint32_t::max value.
  */
 class pointer {
 public:
-  constexpr pointer(std::nullptr_t = nullptr) noexcept : offset{std::numeric_limits<std::uint32_t>::max()} {}
+  static constexpr auto null_value = std::numeric_limits<std::uint32_t>::max();
+
+  constexpr pointer(std::nullptr_t = nullptr) noexcept : offset{null_value} {}
   constexpr pointer(std::size_t offset) noexcept : offset{(std::uint32_t)offset} {}
-
-  constexpr auto index() const noexcept -> std::size_t { return static_cast<std::size_t>(offset); }
-  constexpr operator bool() const noexcept { return offset != std::numeric_limits<std::uint32_t>::max(); }
-
+  
+  constexpr operator bool() const noexcept { return offset != null_value; }
   constexpr bool operator==(const pointer& other) const noexcept { return offset == other.offset; }
   constexpr bool operator!=(const pointer& other) const noexcept { return !(*this == other); }
+
+  constexpr auto index() const noexcept -> std::size_t { return static_cast<std::size_t>(offset); }
 
 private:
   std::uint32_t offset;
