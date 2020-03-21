@@ -186,8 +186,8 @@ auto cells::vertical(cells north, cells south) noexcept -> cells {
  * value, encoded in three bitmaps. Each location in a bitmap represents that
  * bit in the number of neighbours of the cell located there.
  * We neglect the counts of 8 and 9 neighbouring cells, since they behave
- * identically to 0 and 1 neighbours, respectively. Instead, we just allow
- * overflow.
+ * identically to 0 and 1 neighbours, respectively. Instead, we just overflow
+ * on these counts.
  * Optimised for 64-bit register bit manipulations. Works on 32-bit systems,
  * too, but performance is likely to degrade drastically.
  */
