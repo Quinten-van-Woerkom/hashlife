@@ -27,26 +27,40 @@
 using namespace life;
 
 TEST_CASE("Pointers type as expected", "[pointer]") {
-  SECTION("Pointer is null only when initialised to nullptr") {
-    pointer null = nullptr;
-    pointer fill = 3;
-    pointer zero = (std::size_t)0;
+    SECTION("Pointer is null only when initialised to nullptr") {
+        pointer null = nullptr;
+        pointer fill = 3;
+        pointer zero = (std::size_t)0;
 
-    REQUIRE(!null);
-    REQUIRE(fill);
-    REQUIRE(zero);
-  }
+        REQUIRE(!null);
+        REQUIRE(fill);
+        REQUIRE(zero);
+    }
 
-  SECTION("Pointer retains value it is initialised to") {
-    pointer ptr = 3;
-    REQUIRE(ptr.index() == 3);
-  }
+    SECTION("Pointer retains value it is initialised to") {
+        pointer ptr = 3;
+        REQUIRE(ptr.index() == 3);
+    }
 
-  SECTION("Pointers with same indices compare equal") {
-    pointer a = 5;
-    pointer b = 5;
-    pointer c = 6;
-    REQUIRE(a == b);
-    REQUIRE(a != c);
-  }
+    SECTION("Pointers with same indices compare equal") {
+        pointer a = 5;
+        pointer b = 5;
+        pointer c = 6;
+        REQUIRE(a == b);
+        REQUIRE(a != c);
+    }
+
+    SECTION("Identical macrocells should have identical hashes") {
+        auto a = macrocell{pointer{nullptr}, pointer{1}, pointer{2}, pointer{3}};
+        auto b = macrocell{pointer{nullptr}, pointer{1}, pointer{2}, pointer{3}};
+
+        REQUIRE(a.hash() == b.hash());
+    }
+
+    SECTION("Similar macrocells should have different hashes") {
+        auto a = macrocell{pointer{nullptr}, pointer{1}, pointer{2}, pointer{3}};
+        auto b = macrocell{pointer{nullptr}, pointer{1}, pointer{2}, pointer{4}};
+
+        REQUIRE(a.hash() != b.hash());
+    }
 }

@@ -24,9 +24,12 @@
 
 #include <array>
 #include <cstdint>
+#include <functional>
 #include <limits>
+#include <unordered_set>
 
 #include "hash.hpp"
+
 namespace life {
 /**
  * Pointer to a macrocell or cell square one layer down in the life universe.
@@ -58,10 +61,36 @@ private:
  */
 class macrocell {
 public:
+  macrocell(pointer nw, pointer ne, pointer sw, pointer se) noexcept
+  : future{nullptr, nullptr}, children{nw, ne, sw, se} {}
+
+  auto operator==(const macrocell& other) const noexcept { return future == other.future && children == other.children; }
+  auto operator!=(const macrocell& other) const noexcept { return !(*this == other); }
+  auto hash() const noexcept { return variadic_hash(children[0], children[1], children[2], children[3]); }
+
+  auto step() const noexcept -> pointer { return future[0]; }
+  auto next() const noexcept -> pointer { return future[1]; }
+  auto nw() const noexcept -> pointer { return children[0]; }
+  auto ne() const noexcept -> pointer { return children[1]; }
+  auto sw() const noexcept -> pointer { return children[2]; }
+  auto se() const noexcept -> pointer { return children[3]; }
 
 private:
-  std::array<pointer, 4> children;
+  std::array<pointer, 2> future; // Stored as one step, then 2^{n-2} steps in the future
+  std::array<pointer, 4> children; // Stored as nw, ne, sw, se
 };
+
+/**
+ * A layer of macrocells allows adding and accessing of all its macrocells,
+ * accessed by pointers.
+ */
+class layer {
+public:
+
+private:
+  
+};
+
 }
 
 HASHLIFE_DEFINE_HASH(life::pointer);
