@@ -17,6 +17,7 @@ all release: conway test
 
 test: $(SRCS) $(TEST)
 	$(CXX) -o $@ $(TEST) $(SRCS) $(LDLIBS) $(LDFLAGS) $(CPPFLAGS) $(ADDED_CPPFLAGS)
+	./test
 
 conway: $(SRCS) $(MAIN)
 	$(CXX) -o $@ $(MAIN) $(SRCS) $(LDLIBS) $(LDFLAGS) $(CPPFLAGS) $(ADDED_CPPFLAGS)
