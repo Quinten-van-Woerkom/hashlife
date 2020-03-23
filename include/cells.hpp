@@ -25,6 +25,8 @@
 #include <iosfwd>
 #include <string_view>
 
+#include "hash.hpp"
+
 namespace life {
 /**
  * Collection of 8x8 life cells.
@@ -85,11 +87,4 @@ private:
 
 auto operator<<(std::ostream& os, const life::cells& other) -> std::ostream&;
 
-namespace std {
-  template<>
-  struct hash<life::cells> {
-    constexpr auto operator()(const life::cells& cells) const noexcept {
-      return cells.hash();
-    }
-  };
-}
+HASHLIFE_DEFINE_HASH(life::cells);

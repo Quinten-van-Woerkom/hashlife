@@ -26,6 +26,7 @@
 #include <cstdint>
 #include <limits>
 
+#include "hash.hpp"
 namespace life {
 /**
  * Pointer to a macrocell or cell square one layer down in the life universe.
@@ -43,6 +44,7 @@ public:
   constexpr operator bool() const noexcept { return offset != null_value; }
   constexpr bool operator==(const pointer& other) const noexcept { return offset == other.offset; }
   constexpr bool operator!=(const pointer& other) const noexcept { return !(*this == other); }
+  constexpr auto hash() const noexcept { return offset; }
 
   constexpr auto index() const noexcept -> std::size_t { return static_cast<std::size_t>(offset); }
 
@@ -61,3 +63,6 @@ private:
   std::array<pointer, 4> children;
 };
 }
+
+HASHLIFE_DEFINE_HASH(life::pointer);
+HASHLIFE_DEFINE_HASH(life::macrocell);
