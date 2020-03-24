@@ -130,6 +130,7 @@ public:
     auto capacity() const noexcept { return _sentinels.size(); }
     auto find(const T& object) const noexcept -> index_type;
     auto free(index_type location) const noexcept -> index_type;
+    void clear() noexcept;
 
     template<typename... Args>
     auto emplace(Args&&... args) noexcept -> index_type {
@@ -243,6 +244,15 @@ auto dense_hash_set<T, Hash>::free(index_type location) const noexcept -> index_
         if (_sentinels[i].empty()) return i;
     }
     return capacity();
+}
+
+/**
+ * Clears all elements by resetting the sentinels.
+ * Allows for fast resetting of the hash table.
+ */
+template<typename T, typename Hash>
+void dense_hash_set<T, Hash>::clear() noexcept {
+    std::fill(_sentinels.begin(), _sentinels.end(), sentinel{});
 }
 
 
