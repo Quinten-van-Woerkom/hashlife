@@ -239,7 +239,8 @@ auto dense_hash_set<T, Hash>::find(const T& object) const noexcept -> index_type
  */
 template<typename T, typename Hash>
 auto dense_hash_set<T, Hash>::free(index_type location) const noexcept -> index_type {
-    for (auto i = location, n = 0ul; n < 10; ++i, ++n) {
+    auto n = 0;
+    for (auto i = location; n < 10; ++i, ++n) {
         if (i == capacity()) i = 0;
         if (_sentinels[i].empty()) return i;
     }
