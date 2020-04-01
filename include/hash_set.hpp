@@ -220,9 +220,9 @@ auto dense_hash_set<T, Hash>::find(const T& object) const noexcept -> index_type
     if (_sentinels[index].matches(reduced_hash) && _elements[index] == object)
         return index;
 
-    for (auto i = index + 1; i != index; ++i) {
+    for (auto i = index + 1;; ++i) {
         if (i == capacity()) i = 0;
-        if (_sentinels[i].empty()) break;
+        if (_sentinels[i].empty() || i == index) break;
 
         if (_sentinels[i].matches(reduced_hash))
             if (_elements[i] == object)
