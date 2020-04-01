@@ -52,7 +52,7 @@ TEST_CASE("Static vector works as expected") {
         a[0] = 1; a[1] = 3; a[2] = 4;
 
         std::copy(a.begin(), a.end(), test.begin());
-        std::equal(a.begin(), a.end(), test.begin());
+        REQUIRE(std::equal(a.begin(), a.end(), test.begin()));
     }
 
     SECTION("Value-initialized") {
