@@ -47,7 +47,7 @@ public:
 
     constexpr static_vector() noexcept : _storage{nullptr}, _size{0} {}
     static_vector(std::size_t count) : _storage{new T[count]}, _size{count} {}
-    static_vector(static_vector&&) noexcept(std::is_nothrow_swappable_v<T>) = default;
+    constexpr static_vector(static_vector&&) noexcept(std::is_nothrow_swappable_v<T>) = default;
 
     template<typename... Args>
     static_vector(std::size_t count, Args&&... args) : _storage{new T[count]}, _size{count} {
