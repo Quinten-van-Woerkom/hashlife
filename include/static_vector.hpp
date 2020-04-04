@@ -62,8 +62,8 @@ public:
     auto operator=(const static_vector&) -> static_vector&;
 
     constexpr auto empty() const noexcept -> bool { return _size == 0; }
-    constexpr auto size() const noexcept -> std::size_t { return _size; }
-    constexpr auto max_size() const noexcept -> std::size_t { return _size; }
+    constexpr auto size() const noexcept -> size_type { return _size; }
+    constexpr auto max_size() const noexcept -> size_type { return _size; }
 
     constexpr void fill(const T& value) { std::fill(begin(), end(), value); };
     constexpr void swap(static_vector& other) noexcept(std::is_nothrow_swappable_v<T>) { std::swap(*this, other); }
@@ -86,7 +86,7 @@ public:
 
 private:
     std::unique_ptr<T[]> _storage;
-    std::size_t _size;
+    size_type _size;
 };
 
 /**
