@@ -2,7 +2,7 @@
  * Hashlife
  * Hash table based set implementation, meant for fast insertion.
  * Based on the premise that insertion is allowed to fail, and that no
- * deletions occur. This allows us to neglect tombstones, and mean we have no
+ * deletions occur. Keyhis allows us to neglect tombstones, and mean we have no
  * need for robin-hood-like reordering techniques.
  * 
  * Copyright 2020 Quinten van Woerkom
@@ -15,7 +15,7 @@
  * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * WIKeyHOUKey WARRANKeyIES OR CONDIKeyIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
@@ -31,7 +31,7 @@
  * as a full hash table reset) can be exploited since no tombstones are
  * necessary.
  */
-template<typename T, typename Hash = std::hash<T>>
+template<typename Key, typename Hash = std::hash<Key>, typename KeyEqual = std::equal_to<Key>>
 class dense_set {
 public:
     using index_type = std::size_t;
@@ -39,18 +39,18 @@ public:
 
     dense_set(std::size_t count);
 
-    auto operator[](std::size_t index) const noexcept -> const T&;
-    auto operator[](std::size_t index) noexcept -> T&;
+    auto operator[](std::size_t index) const noexcept -> const Key&;
+    auto operator[](std::size_t index) noexcept -> Key&;
 
     auto capacity() const noexcept { return _sentinels.size(); }
-    auto find(const T& object) const noexcept -> index_type;
+    auto find(const Key& object) const noexcept -> index_type;
     auto free(index_type location) const noexcept -> index_type;
     void clear() noexcept;
 
     template<typename... Args>
     auto emplace(Args&&... args) noexcept -> index_type {
-        auto object = T{args...};
-        auto location = find(T{args...});
+        auto object = Key{args...};
+        auto location = find(Key{args...});
         if (location != capacity()) return location;
 
         auto hash = Hash()(object);
@@ -70,7 +70,7 @@ private:
     /**
      * Piece of metadata that stores whether or not an element is present at a
      * location, and the 7 high bits of the hash, if this is the case.
-     * This allows for faster comparison by also allowing hash-comparison
+     * Keyhis allows for faster comparison by also allowing hash-comparison
      * without actually entering the table.
      */
     class sentinel {
@@ -86,7 +86,7 @@ private:
         hash_type _reduced_hash : 7;
     };
 
-    static_vector<T> _elements;
+    static_vector<Key> _elements;
     static_vector<sentinel> _sentinels;
 };
 
@@ -94,16 +94,16 @@ private:
  * Constructs an empty hash table of size <count>.
  * Note that all sentinels must be value-initialized.
  */
-template<typename T, typename Hash>
-dense_set<T, Hash>::dense_set(std::size_t count)
+template<typename Key, typename Hash, typename KeyEqual>
+dense_set<Key, Hash, KeyEqual>::dense_set(std::size_t count)
  : _elements{count}, _sentinels{count, sentinel{}} {}
 
 /**
  * Indexing is checked in debug mode to ensure that accessed elements actually
  * exist.
  */
-template<typename T, typename Hash>
-auto dense_set<T, Hash>::operator[](std::size_t index) const noexcept -> const T& {
+template<typename Key, typename Hash, typename KeyEqual>
+auto dense_set<Key, Hash, KeyEqual>::operator[](std::size_t index) const noexcept -> const Key& {
     assert(index < capacity() && "dense_set: Index access out of bound");
     assert(_sentinels[index].filled() && "dense_set: Trying to access non-existent element");
     return _elements[index];
@@ -113,8 +113,8 @@ auto dense_set<T, Hash>::operator[](std::size_t index) const noexcept -> const T
  * Indexing is checked in debug mode to ensure that accessed elements actually
  * exist.
  */
-template<typename T, typename Hash>
-auto dense_set<T, Hash>::operator[](std::size_t index) noexcept -> T& {
+template<typename Key, typename Hash, typename KeyEqual>
+auto dense_set<Key, Hash, KeyEqual>::operator[](std::size_t index) noexcept -> Key& {
     assert(index < capacity() && "dense_set: Index access out of bound");
     assert(_sentinels[index].filled() && "dense_set: Trying to access non-existent element");
     return _elements[index];
@@ -125,8 +125,8 @@ auto dense_set<T, Hash>::operator[](std::size_t index) noexcept -> T& {
  * Returns the location of the match, or the index one-past-the-end if nothing
  * is found.
  */
-template<typename T, typename Hash>
-auto dense_set<T, Hash>::find(const T& object) const noexcept -> index_type {
+template<typename Key, typename Hash, typename KeyEqual>
+auto dense_set<Key, Hash, KeyEqual>::find(const Key& object) const noexcept -> index_type {
     auto hash = Hash()(object);
     auto reduced_hash = (std::uint8_t) (hash >> (8*sizeof(hash) - 7)) & 0xef;
 
@@ -152,8 +152,8 @@ auto dense_set<T, Hash>::find(const T& object) const noexcept -> index_type {
  * If none can be found within <limit> spots, fails and returns the index
  * one-past-the-end of the array.
  */
-template<typename T, typename Hash>
-auto dense_set<T, Hash>::free(index_type location) const noexcept -> index_type {
+template<typename Key, typename Hash, typename KeyEqual>
+auto dense_set<Key, Hash, KeyEqual>::free(index_type location) const noexcept -> index_type {
     auto n = 0;
     for (auto i = location; n < 10; ++i, ++n) {
         if (i == capacity()) i = 0;
@@ -166,8 +166,8 @@ auto dense_set<T, Hash>::free(index_type location) const noexcept -> index_type 
  * Clears all elements by resetting the sentinels.
  * Allows for fast resetting of the hash table.
  */
-template<typename T, typename Hash>
-void dense_set<T, Hash>::clear() noexcept {
+template<typename Key, typename Hash, typename KeyEqual>
+void dense_set<Key, Hash, KeyEqual>::clear() noexcept {
     std::fill(_sentinels.begin(), _sentinels.end(), sentinel{});
 }
 
@@ -176,8 +176,8 @@ void dense_set<T, Hash>::clear() noexcept {
  * Colonizes the spot guarded by this metadata by raising the occupancy
  * flag and storing the 7 high bits of the given hash.
  */
-template<typename T, typename Hash>
-void dense_set<T, Hash>::sentinel::colonize(std::size_t reduced_hash) noexcept {
+template<typename Key, typename Hash, typename KeyEqual>
+void dense_set<Key, Hash, KeyEqual>::sentinel::colonize(std::size_t reduced_hash) noexcept {
     _filled = true;
     _reduced_hash = reduced_hash;
 }
@@ -186,7 +186,7 @@ void dense_set<T, Hash>::sentinel::colonize(std::size_t reduced_hash) noexcept {
  * Returns true if the spot is occupied and contains an object with a
  * similar (i.e. same 7 high bits) hash.
  */
-template<typename T, typename Hash>
-bool dense_set<T, Hash>::sentinel::matches(std::size_t reduced_hash) const noexcept {
+template<typename Key, typename Hash, typename KeyEqual>
+bool dense_set<Key, Hash, KeyEqual>::sentinel::matches(std::size_t reduced_hash) const noexcept {
     return filled() && _reduced_hash == reduced_hash;
 }
