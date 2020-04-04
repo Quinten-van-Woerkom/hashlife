@@ -22,6 +22,9 @@
 
 #pragma once
 
+#include <algorithm>
+#include <tuple>
+
 #include "static_vector.hpp"
 
 /**
@@ -34,43 +37,221 @@
 template<typename Key, typename Hash = std::hash<Key>, typename KeyEqual = std::equal_to<Key>>
 class dense_set {
 public:
-    using index_type = std::size_t;
-    using hash_type = std::size_t;
+    using key_type = Key;
+    using value_type = Key;
+    using size_type = std::size_t;
+    using difference_type = std::ptrdiff_t;
+    using hasher = Hash;
+    using hash_type = std::invoke_result_t<hasher, key_type>;
+    using key_equal = KeyEqual;
+    using reference = value_type&;
+    using const_reference = const value_type&;
+    using pointer = value_type*;
+    using const_pointer = const value_type*;
 
-    dense_set(std::size_t count);
+    static constexpr bool is_nothrow_swappable = std::is_nothrow_swappable_v<hasher> && std::is_nothrow_swappable_v<key_equal>;
 
-    auto operator[](std::size_t index) const noexcept -> const Key&;
-    auto operator[](std::size_t index) noexcept -> Key&;
+    /**************************************************************************
+     * Iterator into the hashmap.
+     * Basically an index, considering the hashmap supports open addressing.
+     */
+    struct iterator {
+        constexpr iterator(const dense_set& owner, size_type index) noexcept
+         : owner{&owner}, index{index} {}
+        
+        constexpr iterator(const iterator&) = default;
+        constexpr auto operator=(const iterator&) -> iterator& = default;
 
-    auto capacity() const noexcept { return _sentinels.size(); }
-    auto find(const Key& object) const noexcept -> index_type;
-    auto free(index_type location) const noexcept -> index_type;
+        /**
+         * Increments the index until a valid object is found, i.e. where the
+         * sentinel indicates an object exists.
+         */
+        constexpr auto operator++() noexcept -> iterator& {
+            ++index;
+            while (owner->_sentinels[index].empty())
+                ++index;
+            return *this;
+        }
+
+        constexpr auto operator++(int) noexcept -> iterator {
+            auto return_value = *this;
+            ++index;
+            while (owner->_sentinels[index].empty())
+                ++index;
+            return return_value;
+        }
+
+        /**
+         * Equality comparators.
+         */
+        constexpr auto operator==(iterator other) const noexcept {
+            return owner == other.owner && index == other.index;
+        }
+
+        constexpr auto operator!=(iterator other) const noexcept {
+            return !(*this == other);
+        }
+
+        /**
+         * Dereferences the iterator, returning the object at the current index.
+         * Assumes that an object exists at this index.
+         */
+        constexpr auto operator*() const noexcept -> const_reference {
+            return (*owner)[index];
+        }
+
+        const dense_set* owner;
+        size_type index;
+    };
+
+    using const_iterator = iterator;
+
+
+    /**************************************************************************
+     * Iterator into the hashmap, covering only a single contiguous region of
+     * "similar" memory, i.e. locations that can have the same hash.
+     * Basically an index, considering the hashmap supports open addressing.
+     */
+    struct local_iterator {
+        constexpr local_iterator(const dense_set& owner, size_type index) noexcept
+         : owner{&owner}, index{index} {}
+
+        constexpr local_iterator(const iterator& other) noexcept
+        : owner{other.owner}, index{other.index} {}
+
+        constexpr auto operator=(const iterator& other) noexcept {
+            owner = other.owner;
+            index = other.index;
+        }
+
+        constexpr operator iterator() const noexcept { return iterator{*owner, index}; }
+
+        /**
+         * Unconditionally increments the index.
+         * Implements wrap-around.
+         */
+        constexpr auto operator++() noexcept -> local_iterator& {
+            ++index;
+            if (*this == owner->end())
+                *this = owner->begin();
+            return *this;
+        }
+
+        constexpr auto operator++(int) noexcept -> local_iterator {
+            auto return_value = *this;
+            ++(*this);
+            return return_value;
+        }
+
+        /**
+         * Equality comparators, hackish implementation allows for automatic
+         * determination of end iterator when an empty sentinel is found.
+         */
+        constexpr auto operator==(local_iterator) const noexcept {
+            return owner->_sentinels[index].empty();
+        }
+
+        constexpr auto operator!=(local_iterator other) const noexcept {
+            return !(*this == other);
+        }
+
+        constexpr auto operator==(iterator other) const noexcept {
+            return owner == other.owner && index == other.index;
+        }
+
+        constexpr auto operator!=(iterator other) const noexcept {
+            return !(*this == other);
+        }
+
+        /**
+         * Dereferences the iterator, returning the object at the current index.
+         * Assumes that an object exists at this index.
+         */
+        constexpr auto operator*() const noexcept -> const_reference {
+            return (*owner)[index];
+        }
+
+        const dense_set* owner;
+        size_type index;
+    };
+
+    using const_local_iterator = local_iterator;
+
+
+    /**************************************************************************
+     * Constructors
+     */
+    dense_set(size_type count);
+    dense_set(const dense_set&) = default;
+    constexpr dense_set(dense_set&&) noexcept(is_nothrow_swappable) = default;
+
+
+    /**************************************************************************
+     * Assignment operators
+     */
+    auto operator=(const dense_set&) -> dense_set& = default;
+    constexpr auto operator=(dense_set&&) noexcept(is_nothrow_swappable) -> dense_set& = default;
+
+
+    /**************************************************************************
+     * Iterators
+     */
+    constexpr auto begin() noexcept { return iterator{*this, 0}; }
+    constexpr auto begin() const noexcept { return const_iterator{*this, 0}; }
+    constexpr auto end() noexcept { return iterator{*this, max_size()}; }
+    constexpr auto end() const noexcept { return const_iterator{*this, max_size()}; }
+    constexpr auto cbegin() const noexcept { return const_iterator{*this, 0}; }
+    constexpr auto cend() const noexcept { return const_iterator{*this, max_size()}; }
+
+
+    /**************************************************************************
+     * Capacity
+     */
+    auto empty() const noexcept { return std::all_of(_sentinels.begin(), _sentinels.end(), [](auto a) { return a.empty(); }); }
+    auto size() const noexcept { return std::count(_sentinels.begin(), _sentinels.end(), [](auto a) { return a.filled(); }); }
+    auto max_size() const noexcept { return _elements.max_size(); }
+
+
+    /**************************************************************************
+     * Modifiers
+     */
     void clear() noexcept;
+    auto insert(const value_type& value) -> std::pair<iterator, bool>;
+    auto insert(value_type&& value) -> std::pair<iterator, bool>;
+    void swap(dense_set&& other) noexcept(is_nothrow_swappable) { std::swap(*this, other); }
 
     template<typename... Args>
-    auto emplace(Args&&... args) noexcept -> index_type {
+    auto emplace(Args&&... args) noexcept -> std::pair<iterator, bool> {
         auto object = Key{args...};
-        auto location = find(Key{args...});
-        if (location != capacity()) return location;
+        auto location = find(object);
+        if (location != end()) return {location, false};
 
-        auto hash = Hash()(object);
-        location = hash % capacity();
+        auto hash = hasher()(object);
+        location = iterator{*this, hash % max_size()};
         location = free(location);
 
-        if (location == capacity()) return capacity();
-        else {
-            auto reduced_hash = (std::uint8_t) (hash >> (8*sizeof(hash) - 7)) & 0xef;
-            _sentinels[location].colonize(reduced_hash);
-            _elements[location] = std::move(object);
-            return location;
-        }
+        if (location == end()) return {location, false};
+
+        auto reduced_hash = (std::uint8_t) (hash >> (8*sizeof(hash) - 7)) & 0xef;
+        _sentinels[location.index].colonize(reduced_hash);
+        _elements[location.index] = std::move(object);
+        return {location, true};
     }
+
+
+    /**************************************************************************
+     * Lookup
+     */
+    auto operator[](size_type index) noexcept -> Key&;
+    auto operator[](size_type index) const noexcept -> const Key&;
+    auto find(const Key& object) const noexcept -> iterator;
+    auto free(iterator location) const noexcept -> iterator;
 
 private:
     /**
      * Piece of metadata that stores whether or not an element is present at a
      * location, and the 7 high bits of the hash, if this is the case.
-     * Keyhis allows for faster comparison by also allowing hash-comparison
+     * This allows for faster comparison by also allowing hash-comparison
      * without actually entering the table.
      */
     class sentinel {
@@ -90,6 +271,10 @@ private:
     static_vector<sentinel> _sentinels;
 };
 
+
+/******************************************************************************
+ * Constructors
+ */
 /**
  * Constructs an empty hash table of size <count>.
  * Note that all sentinels must be value-initialized.
@@ -98,13 +283,17 @@ template<typename Key, typename Hash, typename KeyEqual>
 dense_set<Key, Hash, KeyEqual>::dense_set(std::size_t count)
  : _elements{count}, _sentinels{count, sentinel{}} {}
 
+
+/******************************************************************************
+ * Lookup
+ */
 /**
  * Indexing is checked in debug mode to ensure that accessed elements actually
  * exist.
  */
 template<typename Key, typename Hash, typename KeyEqual>
-auto dense_set<Key, Hash, KeyEqual>::operator[](std::size_t index) const noexcept -> const Key& {
-    assert(index < capacity() && "dense_set: Index access out of bound");
+auto dense_set<Key, Hash, KeyEqual>::operator[](std::size_t index) noexcept -> Key& {
+    assert(index < max_size() && "dense_set: Index access out of bound");
     assert(_sentinels[index].filled() && "dense_set: Trying to access non-existent element");
     return _elements[index];
 }
@@ -114,8 +303,8 @@ auto dense_set<Key, Hash, KeyEqual>::operator[](std::size_t index) const noexcep
  * exist.
  */
 template<typename Key, typename Hash, typename KeyEqual>
-auto dense_set<Key, Hash, KeyEqual>::operator[](std::size_t index) noexcept -> Key& {
-    assert(index < capacity() && "dense_set: Index access out of bound");
+auto dense_set<Key, Hash, KeyEqual>::operator[](std::size_t index) const noexcept -> const Key& {
+    assert(index < max_size() && "dense_set: Index access out of bound");
     assert(_sentinels[index].filled() && "dense_set: Trying to access non-existent element");
     return _elements[index];
 }
@@ -126,40 +315,38 @@ auto dense_set<Key, Hash, KeyEqual>::operator[](std::size_t index) noexcept -> K
  * is found.
  */
 template<typename Key, typename Hash, typename KeyEqual>
-auto dense_set<Key, Hash, KeyEqual>::find(const Key& object) const noexcept -> index_type {
+auto dense_set<Key, Hash, KeyEqual>::find(const Key& object) const noexcept -> iterator {
     auto hash = Hash()(object);
     auto reduced_hash = (std::uint8_t) (hash >> (8*sizeof(hash) - 7)) & 0xef;
+    auto index = hash % max_size();
 
-    auto index = hash % capacity();
+    auto begin = local_iterator{*this, index};
+    auto dummy = local_iterator{*this, max_size()}; // Dummy iterator
 
-    if (_sentinels[index].matches(reduced_hash) && _elements[index] == object)
-        return index;
-
-    for (auto i = index + 1;; ++i) {
-        if (i == capacity()) i = 0;
-        if (_sentinels[i].empty() || i == index) break;
-
-        if (_sentinels[i].matches(reduced_hash))
-            if (_elements[i] == object)
-                return i;
+    for (auto current = begin; current != dummy; ++current) {
+        auto index = current.index;
+        if (_sentinels[index].matches(reduced_hash))
+            if (_elements[index] == object)
+                return iterator{*this, index};
     }
-
-    return capacity();
+    return end();
 }
 
 /**
  * Finds the first free location after a given index.
- * If none can be found within <limit> spots, fails and returns the index
+ * If none can be found within 10 spots, fails and returns the index
  * one-past-the-end of the array.
  */
 template<typename Key, typename Hash, typename KeyEqual>
-auto dense_set<Key, Hash, KeyEqual>::free(index_type location) const noexcept -> index_type {
-    auto n = 0;
-    for (auto i = location; n < 10; ++i, ++n) {
-        if (i == capacity()) i = 0;
-        if (_sentinels[i].empty()) return i;
+auto dense_set<Key, Hash, KeyEqual>::free(iterator location) const noexcept -> iterator {
+    auto spots_visited = 0;
+    auto dummy_end = local_iterator{*this, max_size()};
+    auto current = local_iterator{location};
+
+    for (; current != dummy_end; ++current, ++spots_visited) {
+        if (spots_visited == 10) return end();
     }
-    return capacity();
+    return current;
 }
 
 /**
@@ -177,7 +364,7 @@ void dense_set<Key, Hash, KeyEqual>::clear() noexcept {
  * flag and storing the 7 high bits of the given hash.
  */
 template<typename Key, typename Hash, typename KeyEqual>
-void dense_set<Key, Hash, KeyEqual>::sentinel::colonize(std::size_t reduced_hash) noexcept {
+void dense_set<Key, Hash, KeyEqual>::sentinel::colonize(hash_type reduced_hash) noexcept {
     _filled = true;
     _reduced_hash = reduced_hash;
 }
@@ -187,6 +374,6 @@ void dense_set<Key, Hash, KeyEqual>::sentinel::colonize(std::size_t reduced_hash
  * similar (i.e. same 7 high bits) hash.
  */
 template<typename Key, typename Hash, typename KeyEqual>
-bool dense_set<Key, Hash, KeyEqual>::sentinel::matches(std::size_t reduced_hash) const noexcept {
+bool dense_set<Key, Hash, KeyEqual>::sentinel::matches(hash_type reduced_hash) const noexcept {
     return filled() && _reduced_hash == reduced_hash;
 }

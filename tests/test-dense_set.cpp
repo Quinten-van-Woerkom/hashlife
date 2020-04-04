@@ -28,15 +28,15 @@ TEST_CASE("Hash-set works as expected") {
     auto set = dense_set<int>{5};
 
     SECTION("Initialises empty") {
-        REQUIRE(set.find(3) == set.capacity());
+        REQUIRE(set.find(3) == set.end());
     }
 
     SECTION("Emplacing should guarantuee find") {
         set.emplace(3);
-        auto index = set.find(3);
+        auto location = set.find(3);
 
-        REQUIRE(index != set.capacity());
-        REQUIRE(set[index] == 3);
+        REQUIRE(location != set.end());
+        REQUIRE(*location == 3);
     }
 
     SECTION("Emplacing more than five elements should fail after the fifth") {
@@ -47,18 +47,18 @@ TEST_CASE("Hash-set works as expected") {
         auto success5 = set.emplace(5);
         auto fail6 = set.emplace(6);
 
-        REQUIRE(success1 != set.capacity());
-        REQUIRE(success2 != set.capacity());
-        REQUIRE(success3 != set.capacity());
-        REQUIRE(success4 != set.capacity());
-        REQUIRE(success5 != set.capacity());
-        REQUIRE(fail6 == set.capacity());
+        REQUIRE(success1.second);
+        REQUIRE(success2.second);
+        REQUIRE(success3.second);
+        REQUIRE(success4.second);
+        REQUIRE(success5.second);
+        REQUIRE(!fail6.second);
 
-        REQUIRE(set.find(1) != set.capacity());
-        REQUIRE(set.find(2) != set.capacity());
-        REQUIRE(set.find(3) != set.capacity());
-        REQUIRE(set.find(4) != set.capacity());
-        REQUIRE(set.find(5) != set.capacity());
-        REQUIRE(set.find(6) == set.capacity());
+        REQUIRE(set.find(1) != set.end());
+        REQUIRE(set.find(2) != set.end());
+        REQUIRE(set.find(3) != set.end());
+        REQUIRE(set.find(4) != set.end());
+        REQUIRE(set.find(5) != set.end());
+        REQUIRE(set.find(6) == set.end());
     }
 }
