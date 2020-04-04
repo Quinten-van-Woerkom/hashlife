@@ -24,44 +24,6 @@
 #include <array>
 #include <iostream>
 
-TEST_CASE("Static vector works as expected") {
-    static_vector<int> test{3};
-
-    SECTION("Size sticks") {
-        REQUIRE(test.size() == 3);
-        REQUIRE(!test.empty());
-    }
-
-    SECTION("Element assignment sticks") {
-        test[0] = 42;
-        REQUIRE(test[0] == 42);
-    }
-
-    SECTION("Vector assignment sticks") {
-        static_vector<int> assign{5};
-        assign[3] = 65;
-        test = assign;
-
-        REQUIRE(test.size() == 5);
-        REQUIRE(test[3] == 65);
-        REQUIRE(std::equal(test.begin(), test.end(), assign.begin()));
-    }
-
-    SECTION("Allow iteration") {
-        static_vector<int> a{3};
-        a[0] = 1; a[1] = 3; a[2] = 4;
-
-        std::copy(a.begin(), a.end(), test.begin());
-        REQUIRE(std::equal(a.begin(), a.end(), test.begin()));
-    }
-
-    SECTION("Value-initialized") {
-        static_vector<int> a{1000, 1};
-        for (auto element : a)
-            REQUIRE(element == 1);
-    }
-}
-
 TEST_CASE("Hash-set works as expected") {
     auto set = dense_hash_set<int>{5};
 
