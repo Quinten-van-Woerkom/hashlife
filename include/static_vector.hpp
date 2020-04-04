@@ -47,7 +47,7 @@ public:
 
     constexpr static_vector() noexcept : _storage{nullptr}, _size{0} {}
     static_vector(std::size_t count) : _storage{new T[count]}, _size{count} {}
-    constexpr static_vector(static_vector&&) noexcept(std::is_nothrow_swappable_v<T>) = default;
+    constexpr static_vector(static_vector&&) noexcept = default;
 
     template<typename... Args>
     static_vector(std::size_t count, Args&&... args) : _storage{new T[count]}, _size{count} {
@@ -66,7 +66,7 @@ public:
     constexpr auto max_size() const noexcept -> size_type { return _size; }
 
     constexpr void fill(const T& value) { std::fill(begin(), end(), value); };
-    constexpr void swap(static_vector& other) noexcept(std::is_nothrow_swappable_v<T>) { std::swap(*this, other); }
+    constexpr void swap(static_vector& other) noexcept { std::swap(*this, other); }
 
     constexpr auto operator[](std::size_t index) -> T&;
     constexpr auto operator[](std::size_t index) const -> const T&;
