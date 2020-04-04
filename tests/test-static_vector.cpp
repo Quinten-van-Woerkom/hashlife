@@ -55,7 +55,7 @@ TEST_CASE("Static vector works as expected") {
     }
 
     SECTION("Value-initialized") {
-        static_vector<int> a{1000, 1};
+        static_vector<int> a{10, 1};
         for (auto element : a)
             REQUIRE(element == 1);
     }
@@ -64,7 +64,9 @@ TEST_CASE("Static vector works as expected") {
         static_vector<int> a{10, 2};
         static_vector<int> b{20, 1};
         auto c = b;
+        auto* d = b.data();
         a.swap(b);
         REQUIRE(std::equal(a.begin(), a.end(), c.begin()));
+        REQUIRE(a.data() == d);
     }
 }
