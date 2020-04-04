@@ -31,6 +31,18 @@
 template<typename T>
 class static_vector {
 public:
+    using value_type = T;
+    using size_type = std::size_t;
+    using difference_type = std::ptrdiff_t;
+    using reference = value_type&;
+    using const_reference = const value_type&;
+    using pointer = T*;
+    using const_pointer = const T*;
+    using iterator = pointer;
+    using const_iterator = const_pointer;
+    using reverse_iterator = std::reverse_iterator<iterator>;
+    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+
     constexpr static_vector() noexcept : _storage{nullptr}, _size{0} {}
     static_vector(std::size_t count) : _storage{new T[count]}, _size{count} {}
     static_vector(const static_vector&) = default;
