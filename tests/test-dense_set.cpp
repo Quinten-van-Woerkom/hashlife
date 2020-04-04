@@ -19,13 +19,13 @@
 
 #include "catch2/catch.hpp"
 
-#include "hash_set.hpp"
+#include "dense_set.hpp"
 
 #include <array>
 #include <iostream>
 
 TEST_CASE("Hash-set works as expected") {
-    auto set = dense_hash_set<int>{5};
+    auto set = dense_set<int>{5};
 
     SECTION("Initialises empty") {
         REQUIRE(set.find(3) == set.capacity());

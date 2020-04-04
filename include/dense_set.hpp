@@ -32,12 +32,12 @@
  * necessary.
  */
 template<typename T, typename Hash = std::hash<T>>
-class dense_hash_set {
+class dense_set {
 public:
     using index_type = std::size_t;
     using hash_type = std::size_t;
 
-    dense_hash_set(std::size_t count);
+    dense_set(std::size_t count);
 
     auto operator[](std::size_t index) const noexcept -> const T&;
     auto operator[](std::size_t index) noexcept -> T&;
@@ -95,7 +95,7 @@ private:
  * Note that all sentinels must be value-initialized.
  */
 template<typename T, typename Hash>
-dense_hash_set<T, Hash>::dense_hash_set(std::size_t count)
+dense_set<T, Hash>::dense_set(std::size_t count)
  : _elements{count}, _sentinels{count, sentinel{}} {}
 
 /**
@@ -103,9 +103,9 @@ dense_hash_set<T, Hash>::dense_hash_set(std::size_t count)
  * exist.
  */
 template<typename T, typename Hash>
-auto dense_hash_set<T, Hash>::operator[](std::size_t index) const noexcept -> const T& {
-    assert(index < capacity() && "dense_hash_set: Index access out of bound");
-    assert(_sentinels[index].filled() && "dense_hash_set: Trying to access non-existent element");
+auto dense_set<T, Hash>::operator[](std::size_t index) const noexcept -> const T& {
+    assert(index < capacity() && "dense_set: Index access out of bound");
+    assert(_sentinels[index].filled() && "dense_set: Trying to access non-existent element");
     return _elements[index];
 }
 
@@ -114,9 +114,9 @@ auto dense_hash_set<T, Hash>::operator[](std::size_t index) const noexcept -> co
  * exist.
  */
 template<typename T, typename Hash>
-auto dense_hash_set<T, Hash>::operator[](std::size_t index) noexcept -> T& {
-    assert(index < capacity() && "dense_hash_set: Index access out of bound");
-    assert(_sentinels[index].filled() && "dense_hash_set: Trying to access non-existent element");
+auto dense_set<T, Hash>::operator[](std::size_t index) noexcept -> T& {
+    assert(index < capacity() && "dense_set: Index access out of bound");
+    assert(_sentinels[index].filled() && "dense_set: Trying to access non-existent element");
     return _elements[index];
 }
 
@@ -126,7 +126,7 @@ auto dense_hash_set<T, Hash>::operator[](std::size_t index) noexcept -> T& {
  * is found.
  */
 template<typename T, typename Hash>
-auto dense_hash_set<T, Hash>::find(const T& object) const noexcept -> index_type {
+auto dense_set<T, Hash>::find(const T& object) const noexcept -> index_type {
     auto hash = Hash()(object);
     auto reduced_hash = (std::uint8_t) (hash >> (8*sizeof(hash) - 7)) & 0xef;
 
@@ -153,7 +153,7 @@ auto dense_hash_set<T, Hash>::find(const T& object) const noexcept -> index_type
  * one-past-the-end of the array.
  */
 template<typename T, typename Hash>
-auto dense_hash_set<T, Hash>::free(index_type location) const noexcept -> index_type {
+auto dense_set<T, Hash>::free(index_type location) const noexcept -> index_type {
     auto n = 0;
     for (auto i = location; n < 10; ++i, ++n) {
         if (i == capacity()) i = 0;
@@ -167,7 +167,7 @@ auto dense_hash_set<T, Hash>::free(index_type location) const noexcept -> index_
  * Allows for fast resetting of the hash table.
  */
 template<typename T, typename Hash>
-void dense_hash_set<T, Hash>::clear() noexcept {
+void dense_set<T, Hash>::clear() noexcept {
     std::fill(_sentinels.begin(), _sentinels.end(), sentinel{});
 }
 
@@ -177,7 +177,7 @@ void dense_hash_set<T, Hash>::clear() noexcept {
  * flag and storing the 7 high bits of the given hash.
  */
 template<typename T, typename Hash>
-void dense_hash_set<T, Hash>::sentinel::colonize(std::size_t reduced_hash) noexcept {
+void dense_set<T, Hash>::sentinel::colonize(std::size_t reduced_hash) noexcept {
     _filled = true;
     _reduced_hash = reduced_hash;
 }
@@ -187,6 +187,6 @@ void dense_hash_set<T, Hash>::sentinel::colonize(std::size_t reduced_hash) noexc
  * similar (i.e. same 7 high bits) hash.
  */
 template<typename T, typename Hash>
-bool dense_hash_set<T, Hash>::sentinel::matches(std::size_t reduced_hash) const noexcept {
+bool dense_set<T, Hash>::sentinel::matches(std::size_t reduced_hash) const noexcept {
     return filled() && _reduced_hash == reduced_hash;
 }
