@@ -19,7 +19,7 @@
 
 #include "catch2/catch.hpp"
 
-#include "hash_set.hpp"
+#include "static_vector.hpp"
 
 #include <algorithm>
 
