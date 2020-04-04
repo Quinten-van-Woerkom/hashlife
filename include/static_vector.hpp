@@ -71,6 +71,13 @@ public:
     constexpr auto operator[](std::size_t index) -> T&;
     constexpr auto operator[](std::size_t index) const -> const T&;
 
+    constexpr auto front() noexcept -> reference { return _storage[0]; }
+    constexpr auto front() const noexcept -> const_reference { return _storage[0]; }
+    constexpr auto back() noexcept -> reference { return _storage[size() - 1]; }
+    constexpr auto back() const noexcept -> const_reference { return _storage[size() - 1]; }
+    constexpr auto data() noexcept -> pointer { return _storage.get(); }
+    constexpr auto data() const noexcept -> const_pointer { return _storage.get(); }
+
     constexpr auto begin() noexcept { return _storage.get(); }
     constexpr auto end() noexcept { return _storage.get() + _size; }
     constexpr auto begin() const noexcept { return _storage.get(); }
