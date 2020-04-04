@@ -20,9 +20,11 @@
 
 #pragma once
 
+#include <algorithm>
 #include <cassert>
 #include <functional>
 #include <memory>
+#include <type_traits>
 
 /**
  * Dynamically-allocated vector of constant size.
@@ -45,19 +47,26 @@ public:
 
     constexpr static_vector() noexcept : _storage{nullptr}, _size{0} {}
     static_vector(std::size_t count) : _storage{new T[count]}, _size{count} {}
-    static_vector(const static_vector&) = default;
-    static_vector(static_vector&&) noexcept = default;
+    static_vector(static_vector&&) noexcept(std::is_nothrow_swappable_v<T>) = default;
 
     template<typename... Args>
     static_vector(std::size_t count, Args&&... args) : _storage{new T[count]}, _size{count} {
-        std::fill(begin(), end(), T{args...});
+        fill(T{args...});
+    }
+
+    static_vector(const static_vector& other) : _storage{new T[other.size()]}, _size{other.size()} {
+        std::copy(other.begin(), other.end(), begin());
     }
 
     constexpr auto operator=(static_vector&&) noexcept -> static_vector& = default;
     auto operator=(const static_vector&) -> static_vector&;
 
-    constexpr auto size() const noexcept -> std::size_t { return _size; }
     constexpr auto empty() const noexcept -> bool { return _size == 0; }
+    constexpr auto size() const noexcept -> std::size_t { return _size; }
+    constexpr auto max_size() const noexcept -> std::size_t { return _size; }
+
+    constexpr void fill(const T& value) { std::fill(begin(), end(), value); };
+    constexpr void swap(static_vector& other) noexcept(std::is_nothrow_swappable_v<T>) { std::swap(*this, other); }
 
     constexpr auto operator[](std::size_t index) -> T&;
     constexpr auto operator[](std::size_t index) const -> const T&;
