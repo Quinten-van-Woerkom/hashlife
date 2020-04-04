@@ -31,7 +31,7 @@
 template<typename T>
 class static_vector {
 public:
-    static_vector() noexcept : _storage{nullptr}, _size{0} {}
+    constexpr static_vector() noexcept : _storage{nullptr}, _size{0} {}
     static_vector(std::size_t count) : _storage{new T[count]}, _size{count} {}
     static_vector(const static_vector&) = default;
     static_vector(static_vector&&) noexcept = default;
