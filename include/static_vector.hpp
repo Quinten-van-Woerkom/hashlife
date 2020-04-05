@@ -63,7 +63,7 @@ public:
 
     constexpr auto empty() const noexcept -> bool { return _size == 0; }
     constexpr auto size() const noexcept -> size_type { return _size; }
-    constexpr auto max_size() const noexcept -> size_type { return _size; }
+    constexpr auto capacity() const noexcept -> size_type { return _size; }
 
     constexpr void fill(const T& value) { std::fill(begin(), end(), value); };
     constexpr void swap(static_vector& other) noexcept { std::swap(*this, other); }
