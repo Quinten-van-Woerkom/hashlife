@@ -127,10 +127,10 @@ public:
      */
     constexpr auto begin() noexcept { return iterator{*this, 0}; }
     constexpr auto begin() const noexcept { return const_iterator{*this, 0}; }
-    constexpr auto end() noexcept { return iterator{*this, max_size()}; }
-    constexpr auto end() const noexcept { return const_iterator{*this, max_size()}; }
+    constexpr auto end() noexcept { return iterator{*this, capacity()}; }
+    constexpr auto end() const noexcept { return const_iterator{*this, capacity()}; }
     constexpr auto cbegin() const noexcept { return const_iterator{*this, 0}; }
-    constexpr auto cend() const noexcept { return const_iterator{*this, max_size()}; }
+    constexpr auto cend() const noexcept { return const_iterator{*this, capacity()}; }
 
 
     /**************************************************************************
@@ -138,7 +138,7 @@ public:
      */
     auto empty() const noexcept { return std::all_of(_sentinels.begin(), _sentinels.end(), [](auto a) { return a.empty(); }); }
     auto size() const noexcept { return std::count(_sentinels.begin(), _sentinels.end(), [](auto a) { return a.filled(); }); }
-    auto max_size() const noexcept { return _elements.max_size(); }
+    auto capacity() const noexcept { return _elements.capacity(); }
 
 
     /**************************************************************************
@@ -156,7 +156,7 @@ public:
         if (location != end()) return {location, false};
 
         auto hash = hasher()(object);
-        location = iterator{*this, hash % max_size()};
+        location = iterator{*this, hash % capacity()};
         location = probe(location);
 
         if (location == end()) return {location, false};
@@ -224,7 +224,7 @@ dense_set<Key, Hash, KeyEqual>::dense_set(std::size_t count)
  */
 template<typename Key, typename Hash, typename KeyEqual>
 auto dense_set<Key, Hash, KeyEqual>::operator[](std::size_t index) noexcept -> Key& {
-    assert(index < max_size() && "dense_set: Index access out of bound");
+    assert(index < capacity() && "dense_set: Index access out of bound");
     assert(_sentinels[index].filled() && "dense_set: Trying to access non-existent element");
     return _elements[index];
 }
@@ -235,7 +235,7 @@ auto dense_set<Key, Hash, KeyEqual>::operator[](std::size_t index) noexcept -> K
  */
 template<typename Key, typename Hash, typename KeyEqual>
 auto dense_set<Key, Hash, KeyEqual>::operator[](std::size_t index) const noexcept -> const Key& {
-    assert(index < max_size() && "dense_set: Index access out of bound");
+    assert(index < capacity() && "dense_set: Index access out of bound");
     assert(_sentinels[index].filled() && "dense_set: Trying to access non-existent element");
     return _elements[index];
 }
@@ -258,14 +258,14 @@ template<typename Key, typename Hash, typename KeyEqual>
 auto dense_set<Key, Hash, KeyEqual>::find(const Key& key) const noexcept -> iterator {
     auto hash = hasher()(key);
     auto reduced_hash = (std::uint8_t) (hash >> (8*sizeof(hash) - 7)) & 0xef;
-    auto first = hash % max_size();
+    auto first = hash % capacity();
 
     if (_sentinels[first].matches(reduced_hash))
         if (_elements[first] == key)
             return iterator{*this, first};
 
     for (auto current = first + 1;; ++current) {
-        if (current == max_size()) current = 0;
+        if (current == capacity()) current = 0;
         if (current == first) break;
 
         if (_sentinels[current].matches(reduced_hash))
@@ -285,7 +285,7 @@ auto dense_set<Key, Hash, KeyEqual>::contains(const Key& key) const noexcept -> 
 
 /**
  * Finds the first free location after a given index.
- * If none can be found within 10 (or max_size()) spots, fails and returns the end iterator.
+ * If none can be found within 10 (or capacity()) spots, fails and returns the end iterator.
  */
 template<typename Key, typename Hash, typename KeyEqual>
 auto dense_set<Key, Hash, KeyEqual>::probe(iterator location) const noexcept -> iterator {
@@ -295,7 +295,7 @@ auto dense_set<Key, Hash, KeyEqual>::probe(iterator location) const noexcept -> 
     if (_sentinels[first].empty()) return iterator{*this, first};
 
     for (auto current = first + 1;; ++current, ++spots_visited) {
-        if (current == max_size()) current = 0;
+        if (current == capacity()) current = 0;
         if (_sentinels[current].empty()) return iterator{*this, current};
         if (current == first || spots_visited == 10) return end();
     }
