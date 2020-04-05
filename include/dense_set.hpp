@@ -287,21 +287,21 @@ auto dense_set<Key, Hash, KeyEqual>::count(const Key& key) const noexcept -> siz
 template<typename Key, typename Hash, typename KeyEqual>
 auto dense_set<Key, Hash, KeyEqual>::find(const Key& key) noexcept -> iterator {
     auto hash = hasher()(key);
-    auto reduced_hash = (std::uint8_t) (hash >> (8*sizeof(hash) - 7)) & 0xef;
-    auto first = hash % capacity();
+    auto reduced_hash = (std::uint8_t) (hash >> (8*sizeof(hash) - 7)) & 0xef; 
+    auto start = iterator{*this, hash % capacity()};
+    auto current = start;
 
-    if (_sentinels[first].matches(reduced_hash))
-        if (_elements[first] == key)
-            return iterator{*this, first};
+    do {
+        if ((*current.sentinel).empty()) return end();
 
-    for (auto current = first + 1;; ++current) {
-        if (current == capacity()) current = 0;
-        if (current == first) break;
+        if ((*current.sentinel).matches(reduced_hash))
+            if (*current.element == key)
+                return current;
 
-        if (_sentinels[current].matches(reduced_hash))
-            if (_elements[current] == key)
-                return iterator{*this, current};
-    }
+        ++current.sentinel, ++current.element;
+        if (current == end()) current = begin();
+    } while (current != start);
+        
     return end();
 }
 
