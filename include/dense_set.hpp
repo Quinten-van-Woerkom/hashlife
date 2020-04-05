@@ -157,7 +157,7 @@ public:
 
         auto hash = hasher()(object);
         location = iterator{*this, hash % max_size()};
-        location = free(location);
+        location = find_free(location);
 
         if (location == end()) return {location, false};
 
@@ -176,7 +176,7 @@ public:
     auto count(const Key& key) const noexcept -> size_type;
     auto find(const Key& key) const noexcept -> iterator;
     auto contains(const Key& key) const noexcept -> bool;
-    auto free(iterator location) const noexcept -> iterator;
+    auto find_free(iterator location) const noexcept -> iterator;
 
 private:
     /**
@@ -288,7 +288,7 @@ auto dense_set<Key, Hash, KeyEqual>::contains(const Key& key) const noexcept -> 
  * If none can be found within 10 (or max_size()) spots, fails and returns the end iterator.
  */
 template<typename Key, typename Hash, typename KeyEqual>
-auto dense_set<Key, Hash, KeyEqual>::free(iterator location) const noexcept -> iterator {
+auto dense_set<Key, Hash, KeyEqual>::find_free(iterator location) const noexcept -> iterator {
     auto spots_visited = 0;
     auto first = location.index;
 
