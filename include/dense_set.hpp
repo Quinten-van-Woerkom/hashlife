@@ -108,77 +108,6 @@ public:
 
 
     /**************************************************************************
-     * Iterator into the hashmap, covering only a single contiguous region of
-     * "similar" memory, i.e. locations that can have the same hash.
-     * Basically an index, considering the hashmap supports open addressing.
-     */
-    struct local_iterator {
-        constexpr local_iterator(const dense_set& owner, size_type index) noexcept
-         : owner{&owner}, index{index} {}
-
-        constexpr local_iterator(const iterator& other) noexcept
-        : owner{other.owner}, index{other.index} {}
-
-        constexpr auto operator=(const iterator& other) noexcept {
-            owner = other.owner;
-            index = other.index;
-        }
-
-        constexpr operator iterator() const noexcept { return iterator{*owner, index}; }
-
-        /**
-         * Unconditionally increments the index.
-         * Implements wrap-around.
-         */
-        constexpr auto operator++() noexcept -> local_iterator& {
-            ++index;
-            if (*this == owner->end())
-                *this = owner->begin();
-            return *this;
-        }
-
-        constexpr auto operator++(int) noexcept -> local_iterator {
-            auto return_value = *this;
-            ++(*this);
-            return return_value;
-        }
-
-        /**
-         * Equality comparators, hackish implementation allows for automatic
-         * determination of end iterator when an empty sentinel is found.
-         */
-        constexpr auto operator==(local_iterator) const noexcept {
-            return owner->_sentinels[index].empty();
-        }
-
-        constexpr auto operator!=(local_iterator other) const noexcept {
-            return !(*this == other);
-        }
-
-        constexpr auto operator==(iterator other) const noexcept {
-            return owner == other.owner && index == other.index;
-        }
-
-        constexpr auto operator!=(iterator other) const noexcept {
-            return !(*this == other);
-        }
-
-        /**
-         * Dereferences the iterator, returning the object at the current index.
-         * Assumes that an object exists at this index.
-         */
-        constexpr auto operator*() const noexcept -> const_reference {
-            return (*owner)[index];
-        }
-
-        const dense_set* owner;
-        size_type index;
-    };
-
-    using const_local_iterator = local_iterator;
-
-
-    /**************************************************************************
      * Constructors
      */
     dense_set(size_type count);
@@ -244,7 +173,9 @@ public:
      */
     auto operator[](size_type index) noexcept -> Key&;
     auto operator[](size_type index) const noexcept -> const Key&;
-    auto find(const Key& object) const noexcept -> iterator;
+    auto count(const Key& key) const noexcept -> size_type;
+    auto find(const Key& key) const noexcept -> iterator;
+    auto contains(const Key& key) const noexcept -> bool;
     auto free(iterator location) const noexcept -> iterator;
 
 private:
@@ -310,43 +241,64 @@ auto dense_set<Key, Hash, KeyEqual>::operator[](std::size_t index) const noexcep
 }
 
 /**
+ * Returns the number of elements matching the given key.
+ */
+template<typename Key, typename Hash, typename KeyEqual>
+auto dense_set<Key, Hash, KeyEqual>::count(const Key& key) const noexcept -> size_type {
+    if (find(key) != end()) return 1;
+    else return 0;
+}
+
+/**
  * Checks if the set already contains a given object.
  * Returns the location of the match, or the index one-past-the-end if nothing
  * is found.
  */
 template<typename Key, typename Hash, typename KeyEqual>
-auto dense_set<Key, Hash, KeyEqual>::find(const Key& object) const noexcept -> iterator {
-    auto hash = Hash()(object);
+auto dense_set<Key, Hash, KeyEqual>::find(const Key& key) const noexcept -> iterator {
+    auto hash = hasher()(key);
     auto reduced_hash = (std::uint8_t) (hash >> (8*sizeof(hash) - 7)) & 0xef;
-    auto index = hash % max_size();
+    auto first = hash % max_size();
 
-    auto begin = local_iterator{*this, index};
-    auto dummy = local_iterator{*this, max_size()}; // Dummy iterator
+    if (_sentinels[first].matches(reduced_hash))
+        if (_elements[first] == key)
+            return iterator{*this, first};
 
-    for (auto current = begin; current != dummy; ++current) {
-        auto index = current.index;
-        if (_sentinels[index].matches(reduced_hash))
-            if (_elements[index] == object)
-                return iterator{*this, index};
+    for (auto current = first + 1;; ++current) {
+        if (current == max_size()) current = 0;
+        if (current == first) break;
+
+        if (_sentinels[current].matches(reduced_hash))
+            if (_elements[current] == key)
+                return iterator{*this, current};
     }
     return end();
 }
 
 /**
+ * Checks if the container contains an element with the given key.
+ */
+template<typename Key, typename Hash, typename KeyEqual>
+auto dense_set<Key, Hash, KeyEqual>::contains(const Key& key) const noexcept -> bool {
+    return count(key) != 0;
+}
+
+/**
  * Finds the first free location after a given index.
- * If none can be found within 10 spots, fails and returns the index
- * one-past-the-end of the array.
+ * If none can be found within 10 (or max_size()) spots, fails and returns the end iterator.
  */
 template<typename Key, typename Hash, typename KeyEqual>
 auto dense_set<Key, Hash, KeyEqual>::free(iterator location) const noexcept -> iterator {
     auto spots_visited = 0;
-    auto dummy_end = local_iterator{*this, max_size()};
-    auto current = local_iterator{location};
+    auto first = location.index;
 
-    for (; current != dummy_end; ++current, ++spots_visited) {
-        if (spots_visited == 10) return end();
+    if (_sentinels[first].empty()) return iterator{*this, first};
+
+    for (auto current = first + 1;; ++current, ++spots_visited) {
+        if (current == max_size()) current = 0;
+        if (_sentinels[current].empty()) return iterator{*this, current};
+        if (current == first || spots_visited == 10) return end();
     }
-    return current;
 }
 
 /**
