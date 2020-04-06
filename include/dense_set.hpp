@@ -131,7 +131,9 @@ public:
      */
     template<bool is_constant>
     struct iterator_implementation {
-        constexpr iterator_implementation(dense_set& owner, size_type index) noexcept
+        using owner_reference = typename inner_iterator<is_constant>::owner_reference;
+
+        constexpr iterator_implementation(owner_reference owner, size_type index) noexcept
          : inner{owner, index} {}
 
         constexpr iterator_implementation(inner_iterator<is_constant> inner) noexcept
