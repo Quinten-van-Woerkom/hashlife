@@ -77,9 +77,7 @@ private:
         : owner{other.owner}, index{other.index} {}
 
         constexpr auto operator++() noexcept -> inner_iterator& {
-            ++index;
-            if (index == owner->capacity())
-                index = 0;
+            index = (index + 1) % owner->capacity();
             return *this;
         }
 
@@ -118,7 +116,7 @@ private:
         }
 
         constexpr auto contains(const Key& key) const noexcept {
-            return (*owner)[index] == key;
+            return key_equal()((*owner)[index], key);
         }
 
         owner_pointer owner;
