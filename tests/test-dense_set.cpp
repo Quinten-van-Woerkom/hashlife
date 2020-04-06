@@ -83,4 +83,8 @@ TEST_CASE("Hash-set works as expected") {
         REQUIRE(fail == test.end());
         REQUIRE(set.size() == test.size());
     }
+
+    SECTION("Iterator difference shall represent pointer distance") {
+        REQUIRE(set.end() - set.begin() == set.capacity());
+    }
 }

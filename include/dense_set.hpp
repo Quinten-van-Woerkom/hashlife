@@ -186,6 +186,16 @@ public:
             return *inner;
         }
 
+        /**
+         * Returns the difference between two iterators, interpreting it
+         * as the pointer distance. This creates an external interface that
+         * allows for index retrieval.
+         */
+        friend constexpr auto operator-(const iterator_implementation& lhs,
+            const iterator_implementation& rhs) noexcept -> difference_type {
+            return lhs.inner.index - rhs.inner.index;
+        }
+
         inner_iterator<is_constant> inner;
     };
 
