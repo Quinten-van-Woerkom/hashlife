@@ -198,14 +198,14 @@ public:
      */
     dense_set(size_type count);
     dense_set(const dense_set&) = default;
-    constexpr dense_set(dense_set&&) noexcept(is_nothrow_swappable) = default;
+    constexpr dense_set(dense_set&&) = default;
 
 
     /**************************************************************************
      * Assignment operators
      */
     auto operator=(const dense_set&) -> dense_set& = default;
-    constexpr auto operator=(dense_set&&) noexcept(is_nothrow_swappable) -> dense_set& = default;
+    constexpr auto operator=(dense_set&&) -> dense_set& = default;
 
 
     /**************************************************************************
@@ -231,8 +231,8 @@ public:
      * Modifiers
      */
     void clear() noexcept;
-    auto insert(const value_type& value) -> std::pair<iterator, bool>;
-    auto insert(value_type&& value) -> std::pair<iterator, bool>;
+    auto insert(const value_type& value) noexcept -> std::pair<iterator, bool>;
+    auto insert(value_type&& value) noexcept -> std::pair<iterator, bool>;
     void swap(dense_set&& other) noexcept(is_nothrow_swappable) { std::swap(*this, other); }
 
     template<typename... Args>
