@@ -62,13 +62,13 @@ TEST_CASE("Hash-set works as expected") {
         REQUIRE(set.find(6) == set.end());
     }
 
-    SECTION("Const methods should not modify container") {
+    SECTION("Container shall allow testing after copying") {
         set.emplace(1);
         const auto test = set;
         auto success = test.find(1);
         auto fail = test.find(2);
 
-        // REQUIRE(success != set.end());
-        // REQUIRE(fail == set.end());
+        REQUIRE(success != test.end());
+        REQUIRE(fail == test.end());
     }
 }
