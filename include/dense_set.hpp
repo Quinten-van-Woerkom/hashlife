@@ -2,7 +2,7 @@
  * Hashlife
  * Hash table based set implementation, meant for fast insertion.
  * Based on the premise that insertion is allowed to fail, and that no
- * deletions occur. Keyhis allows us to neglect tombstones, and mean we have no
+ * deletions occur. This allows us to neglect tombstones, and mean we have no
  * need for robin-hood-like reordering techniques.
  * 
  * Copyright 2020 Quinten van Woerkom
