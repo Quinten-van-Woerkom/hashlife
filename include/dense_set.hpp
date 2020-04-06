@@ -222,17 +222,17 @@ public:
     /**************************************************************************
      * Capacity
      */
-    auto empty() const noexcept { return std::all_of(_sentinels.begin(), _sentinels.end(), [](auto a) { return a.empty(); }); }
-    auto size() const noexcept { return std::count(_sentinels.begin(), _sentinels.end(), [](auto a) { return a.filled(); }); }
-    auto capacity() const noexcept { return _elements.capacity(); }
+    constexpr auto empty() const noexcept { return _size == 0; }
+    constexpr auto size() const noexcept { return _size; }
+    constexpr auto capacity() const noexcept { return _elements.capacity(); }
 
 
     /**************************************************************************
      * Modifiers
      */
     void clear() noexcept;
-    auto insert(const value_type& value) noexcept -> std::pair<iterator, bool>;
-    auto insert(value_type&& value) noexcept -> std::pair<iterator, bool>;
+    auto insert(const value_type& value) noexcept -> std::pair<iterator, bool> { return emplace(value); };
+    auto insert(value_type&& value) noexcept -> std::pair<iterator, bool> { return emplace(std::move(value)); };
     void swap(dense_set&& other) noexcept(is_nothrow_swappable) { std::swap(*this, other); }
 
     template<typename... Args>
@@ -251,6 +251,7 @@ public:
         
         free_location.colonize(reduced_hash);
         *free_location = std::move(object);
+        ++_size;
         return {location, true};
     }
 
@@ -292,6 +293,7 @@ private:
 
     static_vector<Key> _elements;
     static_vector<sentinel> _sentinels;
+    size_type _size = 0;
 };
 
 
