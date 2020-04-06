@@ -31,6 +31,10 @@ TEST_CASE("Hash-set works as expected") {
         REQUIRE_THROWS(dense_set<int>{0});
     }
 
+    SECTION("Size initialises to 0") {
+        REQUIRE(set.size() == 0);
+    }
+
     SECTION("Initialises with empty slots") {
         REQUIRE(set.find(3) == set.end());
     }
@@ -49,7 +53,10 @@ TEST_CASE("Hash-set works as expected") {
         auto success3 = set.emplace(3);
         auto success4 = set.emplace(4);
         auto success5 = set.emplace(5);
+
+        REQUIRE(set.size() == 5);
         auto fail6 = set.emplace(6);
+        REQUIRE(set.size() == 5);
 
         REQUIRE(success1.second);
         REQUIRE(success2.second);
@@ -74,5 +81,6 @@ TEST_CASE("Hash-set works as expected") {
 
         REQUIRE(success != test.end());
         REQUIRE(fail == test.end());
+        REQUIRE(set.size() == test.size());
     }
 }
