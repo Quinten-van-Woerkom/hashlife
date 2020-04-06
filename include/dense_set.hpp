@@ -23,6 +23,7 @@
 #pragma once
 
 #include <algorithm>
+#include <stdexcept>
 #include <tuple>
 #include <type_traits>
 
@@ -303,7 +304,9 @@ private:
  */
 template<typename Key, typename Hash, typename KeyEqual>
 dense_set<Key, Hash, KeyEqual>::dense_set(std::size_t count)
- : _elements{count}, _sentinels{count, sentinel{}} {}
+ : _elements{count}, _sentinels{count, sentinel{}} {
+     if (count <= 0) throw std::domain_error{"dense_set: element counts equal to or smaller than 0 are not supported."};
+ }
 
 
 /******************************************************************************

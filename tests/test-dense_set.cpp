@@ -27,7 +27,11 @@
 TEST_CASE("Hash-set works as expected") {
     auto set = dense_set<int>{5};
 
-    SECTION("Initialises empty") {
+    SECTION("A set shall never have capacity 0") {
+        REQUIRE_THROWS(dense_set<int>{0});
+    }
+
+    SECTION("Initialises with empty slots") {
         REQUIRE(set.find(3) == set.end());
     }
 
