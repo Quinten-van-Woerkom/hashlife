@@ -1,15 +1,15 @@
 /**
  * Hashlife
  * A block of 8x8 cells, the basic unit of computation of the life rules.
- * 
+ *
  * Copyright 2020 Quinten van Woerkom
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *  http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -40,11 +40,11 @@ public:
   cells(std::uint64_t bitmap) noexcept : bitmap{bitmap} {}
 
   cells() noexcept = default;
-  cells(const cells&) = default;
-  cells(cells&&) = default;
+  cells(const cells &) = default;
+  cells(cells &&) = default;
 
-  auto operator==(const cells&) const noexcept -> bool;
-  auto operator!=(const cells&) const noexcept -> bool;
+  auto operator==(const cells &) const noexcept -> bool;
+  auto operator!=(const cells &) const noexcept -> bool;
   auto hash() const noexcept -> std::size_t;
 
   auto operator()(std::size_t x, std::size_t y) const noexcept -> bool;
@@ -69,12 +69,12 @@ public:
   static auto empty_square() noexcept { return cells{"$$$$$$$$"}; }
   static auto block() noexcept { return cells{"$$$...**...$...**...$$$$"}; }
   static auto beehive() noexcept { return cells{"$$$...**$..*..*$...**$$$"}; }
-  static auto loaf() noexcept { return cells{"$$...**$..*..*$...*.*$....*$$$"}; }
+  static auto loaf() noexcept { return cells{"$$..**$.*..*$..*.*$...*$$$"}; }
   static auto boat() noexcept { return cells{"$$$..**$..*.*$...*$$$"}; }
   static auto tub() noexcept { return cells{"$$$...*$..*.*$...*$$$"}; }
   static auto blinker() noexcept { return cells{"$$.***$$$$$$"}; }
   static auto toad() noexcept { return cells{"$$$...***$..***$$$$"}; }
-  static auto beacon() noexcept { return cells{"$$..**$..**$....**$....**$$$"}; }
+  static auto beacon() noexcept { return cells{"$$**$**$..**$..**$$$"}; }
   static auto glider() noexcept { return cells{"$$...*$..*$..***$$$$"}; }
   static auto filled() noexcept { return cells{0xffffffffffffffffull}; }
 
@@ -83,8 +83,8 @@ private:
 
   std::uint64_t bitmap = 0;
 };
-}
+} // namespace life
 
-auto operator<<(std::ostream& os, const life::cells& other) -> std::ostream&;
+auto operator<<(std::ostream &os, const life::cells &other) -> std::ostream &;
 
 HASHLIFE_DEFINE_HASH(life::cells);

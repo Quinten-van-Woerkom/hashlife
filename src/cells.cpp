@@ -1,15 +1,15 @@
 /**
  * Hashlife
  * A block of 8x8 cells, the basic unit of computation of the life rules.
- * 
+ *
  * Copyright 2020 Quinten van Woerkom
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *  http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -37,24 +37,27 @@ using namespace life;
  */
 cells::cells(std::string_view format) noexcept {
   auto row = 0u, column = 0u;
-  for (const auto& character : format) {
-    if (character == '*') set(bitmap, column++ + row*columns);
-    if (character == '.') ++column;
-    if (character == '$') column = 0, row += 1;
+  for (const auto &character : format) {
+    if (character == '*')
+      set(bitmap, column++ + row * columns);
+    if (character == '.')
+      ++column;
+    if (character == '$')
+      column = 0, row += 1;
   }
 }
 
 /**
  * Equality is based on comparison of the underlying bitmap.
  */
-auto cells::operator==(const cells& other) const noexcept -> bool {
+auto cells::operator==(const cells &other) const noexcept -> bool {
   return bitmap == other.bitmap;
 }
 
 /**
  * Inequality is based on comparison of the underlying bitmap.
  */
-auto cells::operator!=(const cells& other) const noexcept -> bool {
+auto cells::operator!=(const cells &other) const noexcept -> bool {
   return bitmap != other.bitmap;
 }
 
@@ -72,7 +75,7 @@ auto cells::hash() const noexcept -> std::size_t {
  * positive down and to the right.
  */
 auto cells::operator()(std::size_t x, std::size_t y) const noexcept -> bool {
-  return (bitmap >> (x + y*columns)) & 1ull;
+  return (bitmap >> (x + y * columns)) & 1ull;
 }
 
 /**
@@ -97,7 +100,7 @@ auto cells::step() const noexcept -> cells {
   const auto [sum1, sum2, sum4] = this->neighbours();
   const auto case1 = bitmap & (~sum1 & ~sum2 & sum4); // Alive and 3 neighbours
   const auto case2 = sum1 & sum2 & ~sum4; // Total of 3 cells in neighbourhood
-  constexpr auto  mask = 0x007e7e7e7e7e7e00ull; // Edge cells are unknown.
+  constexpr auto mask = 0x007e7e7e7e7e7e00ull; // Edge cells are unknown.
   return cells{(case1 | case2) & mask};
 }
 
@@ -118,9 +121,11 @@ auto cells::population_count() const noexcept -> std::size_t {
  * added to combat this.
  */
 auto cells::shift(int right, int down) const noexcept -> cells {
-  auto shift = right + down*columns;
-  if (shift >= 0) return cells{bitmap << shift};
-  else return cells{bitmap >> -shift};
+  auto shift = right + down * columns;
+  if (shift >= 0)
+    return cells{bitmap << shift};
+  else
+    return cells{bitmap >> -shift};
 }
 
 /**
@@ -156,10 +161,10 @@ auto cells::west() const noexcept -> cells {
  * each of the given cells is.
  */
 auto cells::center(cells nw, cells ne, cells sw, cells se) noexcept -> cells {
-  auto upper_left = nw.north().west().shift(columns/2, rows/2).bitmap;
-  auto upper_right = ne.north().east().shift(-columns/2, rows/2).bitmap;
-  auto lower_left = sw.south().west().shift(columns/2, -rows/2).bitmap;
-  auto lower_right = se.south().east().shift(-columns/2, -rows/2).bitmap;
+  auto upper_left = nw.north().west().shift(columns / 2, rows / 2).bitmap;
+  auto upper_right = ne.north().east().shift(-columns / 2, rows / 2).bitmap;
+  auto lower_left = sw.south().west().shift(columns / 2, -rows / 2).bitmap;
+  auto lower_right = se.south().east().shift(-columns / 2, -rows / 2).bitmap;
   return cells{upper_left | upper_right | lower_left | lower_right};
 }
 
@@ -167,8 +172,8 @@ auto cells::center(cells nw, cells ne, cells sw, cells se) noexcept -> cells {
  * Creates a new cell center horizontally between two cells, of the same size.
  */
 auto cells::horizontal(cells west, cells east) noexcept -> cells {
-  auto left = west.west().shift(columns/2, 0).bitmap;
-  auto right = east.east().shift(-columns/2, 0).bitmap;
+  auto left = west.west().shift(columns / 2, 0).bitmap;
+  auto right = east.east().shift(-columns / 2, 0).bitmap;
   return cells{left | right};
 }
 
@@ -176,8 +181,8 @@ auto cells::horizontal(cells west, cells east) noexcept -> cells {
  * Creates a new cell center vertically between two cells, of the same size.
  */
 auto cells::vertical(cells north, cells south) noexcept -> cells {
-  auto up = north.north().shift(0, rows/2).bitmap;
-  auto down = south.south().shift(0, -rows/2).bitmap;
+  auto up = north.north().shift(0, rows / 2).bitmap;
+  auto down = south.south().shift(0, -rows / 2).bitmap;
   return cells{up | down};
 }
 
@@ -213,11 +218,13 @@ auto cells::neighbours() const noexcept -> std::array<std::uint64_t, 3> {
  * Prints the cell block to the output stream.
  * Living cells are printed as '*', dead as '.'.
  */
-auto operator<<(std::ostream& os, const cells& other) -> std::ostream& {
+auto operator<<(std::ostream &os, const cells &other) -> std::ostream & {
   for (auto i = 0u; i < cells::rows; ++i) {
     for (auto j = 0u; j < cells::columns; ++j) {
-      if (other(j, i)) os << '*';
-      else os << '.';
+      if (other(j, i))
+        os << '*';
+      else
+        os << '.';
     }
     os << '\n';
   }

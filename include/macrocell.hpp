@@ -4,15 +4,15 @@
  * pointers to other macrocells or actual cell squares, depending on the level.
  * Levels of macrocells are sets to remove computational redundancies.
  * Hash table based set implementation, meant for fast insertion.
- * 
+ *
  * Copyright 2020 Quinten van Woerkom
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *  http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -42,14 +42,21 @@ public:
   static constexpr auto null_value = std::numeric_limits<std::uint32_t>::max();
 
   constexpr pointer(std::nullptr_t = nullptr) noexcept : offset{null_value} {}
-  constexpr pointer(std::size_t offset) noexcept : offset{(std::uint32_t)offset} {}
-  
+  constexpr pointer(std::size_t offset) noexcept
+      : offset{(std::uint32_t)offset} {}
+
   constexpr operator bool() const noexcept { return offset != null_value; }
-  constexpr bool operator==(const pointer& other) const noexcept { return offset == other.offset; }
-  constexpr bool operator!=(const pointer& other) const noexcept { return !(*this == other); }
+  constexpr bool operator==(const pointer &other) const noexcept {
+    return offset == other.offset;
+  }
+  constexpr bool operator!=(const pointer &other) const noexcept {
+    return !(*this == other);
+  }
   constexpr auto hash() const noexcept { return offset; }
 
-  constexpr auto index() const noexcept -> std::size_t { return static_cast<std::size_t>(offset); }
+  constexpr auto index() const noexcept -> std::size_t {
+    return static_cast<std::size_t>(offset);
+  }
 
 private:
   std::uint32_t offset;
@@ -62,11 +69,17 @@ private:
 class macrocell {
 public:
   macrocell(pointer nw, pointer ne, pointer sw, pointer se) noexcept
-  : future{nullptr, nullptr}, children{nw, ne, sw, se} {}
+      : future{nullptr, nullptr}, children{nw, ne, sw, se} {}
 
-  auto operator==(const macrocell& other) const noexcept { return future == other.future && children == other.children; }
-  auto operator!=(const macrocell& other) const noexcept { return !(*this == other); }
-  auto hash() const noexcept { return variadic_hash(children[0], children[1], children[2], children[3]); }
+  auto operator==(const macrocell &other) const noexcept {
+    return future == other.future && children == other.children;
+  }
+  auto operator!=(const macrocell &other) const noexcept {
+    return !(*this == other);
+  }
+  auto hash() const noexcept {
+    return variadic_hash(children[0], children[1], children[2], children[3]);
+  }
 
   auto step() const noexcept -> pointer { return future[0]; }
   auto next() const noexcept -> pointer { return future[1]; }
@@ -76,7 +89,8 @@ public:
   auto se() const noexcept -> pointer { return children[3]; }
 
 private:
-  std::array<pointer, 2> future; // Stored as one step, then 2^{n-2} steps in the future
+  std::array<pointer, 2>
+      future; // Stored as one step, then 2^{n-2} steps in the future
   std::array<pointer, 4> children; // Stored as nw, ne, sw, se
 };
 
@@ -86,12 +100,10 @@ private:
  */
 class layer {
 public:
-
 private:
-  
 };
 
-}
+} // namespace life
 
 HASHLIFE_DEFINE_HASH(life::pointer);
 HASHLIFE_DEFINE_HASH(life::macrocell);
